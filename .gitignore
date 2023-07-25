@@ -1,7 +1,7 @@
 __pycache__
 /workspace.xml
-src/__pycache__
-src/Repositories/__pycache__
-src/Entities/__pycache__
+__pycache__
+Repositories/__pycache__
+Entities/__pycache__
 venv
-src/.idea
+.idea

@@ -9,7 +9,7 @@ from Entities.base import Base
 from Repository import dish_repo, menu_repo, submenu_repo
 
 
-SQLALCHEMY_DATABASE_URL = 'postgresql://postgres:qwerty@localhost:5432/mydb'
+SQLALCHEMY_DATABASE_URL = 'postgresql://postgres:qwerty@db:5432/mydb'
 
 
 if not database_exists(SQLALCHEMY_DATABASE_URL):
