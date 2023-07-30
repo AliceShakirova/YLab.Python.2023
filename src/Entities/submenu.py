@@ -30,8 +30,7 @@ class SubmenuCreateModel(BaseModel):
     title: str
     description: str
 
-    class Config:
-        orm_mode = True
+    model_config ={'from_attributes': True, 'validate_assignment': True}
 
 
 class SubmenuListModel(RootModel):

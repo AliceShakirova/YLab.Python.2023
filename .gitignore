@@ -2,6 +2,7 @@ __pycache__
 /workspace.xml
 __pycache__
 Repositories/__pycache__
-Entities/__pycache__
+src/Entities/__pycache__
 venv
 .idea
+YLab_Python.egg-info

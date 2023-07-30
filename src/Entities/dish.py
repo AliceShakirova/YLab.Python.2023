@@ -28,14 +28,12 @@ class DishModel(BaseModel):
     description: str
     price: str
 
+    model_config ={'from_attributes': True, 'validate_assignment': True}
+
     @field_validator('price', mode= 'before')
     @classmethod
     def price_validator(cls, value: Decimal) -> str:
         return str(round(value, ndigits=2))
-
-    class Config:
-        orm_mode = True
-        validate_assignment = True
 
 
 class DishCreateModel(BaseModel):
@@ -43,8 +41,7 @@ class DishCreateModel(BaseModel):
     description: str
     price: condecimal(ge=0)
 
-    class Config:
-        orm_mode = True
+    model_config ={'from_attributes': True, 'validate_assignment': True}
 
 
 class DishListModel(RootModel):
