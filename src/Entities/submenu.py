@@ -1,6 +1,8 @@
-from sqlalchemy import Integer, String, ForeignKey
+from sqlalchemy import String, ForeignKey
 from sqlalchemy.orm import mapped_column, relationship
-from Entities.base import Base
+from src.Entities.base import Base
+from pydantic import BaseModel, RootModel
+from typing import List
 
 
 class Submenu(Base):
@@ -15,3 +17,22 @@ class Submenu(Base):
     def __init__(self, title, description, menu_id):
         Base.__init__(self, title, description)
         self.menu_id = menu_id
+
+
+class SubmenuModel(BaseModel):
+    id: str
+    title: str
+    description: str
+    dishes_count: int
+
+
+class SubmenuCreateModel(BaseModel):
+    title: str
+    description: str
+
+    class Config:
+        orm_mode = True
+
+
+class SubmenuListModel(RootModel):
+    root: List[SubmenuModel]

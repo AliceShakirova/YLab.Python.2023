@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from Entities.menu import Menu
+from src.Entities.menu import Menu
 
 
 class MenuRepo:
@@ -12,7 +12,8 @@ class MenuRepo:
             new_menu = Menu(title=title, description=description)
             db.add(new_menu)
             db.commit()
-            return new_menu.id
+            db.refresh(new_menu)
+            return new_menu
 
     def get_all_menus(self):
         with Session(autoflush=False, bind=self.engine) as db:
@@ -30,7 +31,8 @@ class MenuRepo:
                 menu_to_update.title = title
                 menu_to_update.description = description
                 db.commit()
-                return menu_to_update.id
+                db.refresh(menu_to_update)
+                return menu_to_update
 
     def delete_menu(self, menu_id):
         with Session(autoflush=False, bind=self.engine) as db:
