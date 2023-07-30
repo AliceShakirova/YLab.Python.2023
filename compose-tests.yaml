@@ -14,6 +14,8 @@ services:
       dockerfile: tests.Dockerfile
     ports:
       - 8000:8000
+    environment:
+      db_address: "db"
     depends_on:
       db:
         condition: service_healthy

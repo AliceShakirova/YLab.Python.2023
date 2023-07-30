@@ -1,3 +1,5 @@
+import os
+
 import fastapi
 from src.Db.database import Database
 from fastapi.encoders import jsonable_encoder
@@ -9,7 +11,13 @@ from src.Entities.submenu import SubmenuModel, SubmenuCreateModel, SubmenuListMo
 
 
 app = fastapi.FastAPI()
-db = Database('postgres', 'qwerty', 'localhost', 5432, 'mydb')
+
+db_address = os.getenv('db_address')
+if db_address is None:
+    db_address = 'localhost'
+
+db = Database('postgres', 'qwerty', db_address, 5432, 'mydb')
+
 repo_m = db.repo_m
 repo_s = db.repo_s
 repo_d = db.repo_d
