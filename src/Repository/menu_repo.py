@@ -1,5 +1,8 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import func, select, and_, union_all
 from src.Entities.menu import Menu
+from src.Entities.submenu import Submenu
+from src.Entities.dish import Dish
 
 
 class MenuRepo:
@@ -42,3 +45,12 @@ class MenuRepo:
             db.delete(menu_to_delete)
             db.commit()
             return True
+
+    def get_submenus_and_dishes_counts(self, menu_id):
+        with Session(autoflush=False, bind=self.engine) as db:
+            return db.execute(
+                select(func.count(func.distinct(Submenu.id).label('submenus_count')),
+                       func.count(func.distinct(Dish.id).label('dishes_count')))
+                .join(Dish, Submenu.id == Dish.submenu_id, isouter=True)
+                .where(Submenu.menu_id == menu_id)
+            ).first()

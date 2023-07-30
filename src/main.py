@@ -9,17 +9,10 @@ from src.Entities.submenu import SubmenuModel, SubmenuCreateModel, SubmenuListMo
 
 
 app = fastapi.FastAPI()
-db = Database('postgres', 'qwerty', 'db', 5432, 'mydb')
+db = Database('postgres', 'qwerty', 'localhost', 5432, 'mydb')
 repo_m = db.repo_m
 repo_s = db.repo_s
 repo_d = db.repo_d
-
-
-def get_submenus_and_dishes_counts(menu_id):
-    submenus = repo_s.get_submenus_of_menu(menu_id)
-    submenus_count = len(submenus)
-    dishes_count = len(repo_d.get_dishes_of_submenus(submenu.id for submenu in submenus))
-    return submenus_count, dishes_count
 
 # menu
 
@@ -30,7 +23,7 @@ def get_list_menus():
     if not all_menus:
         return JSONResponse(content=[], status_code=200)
     for menu in all_menus:
-        menu.submenus_count, menu.dishes_count = get_submenus_and_dishes_counts(menu.id)
+        menu.submenus_count, menu.dishes_count = repo_m.get_submenus_and_dishes_counts(menu.id)
     return all_menus
 
 
@@ -46,7 +39,7 @@ def get_target_menu(menu_id):
     menu = repo_m.get_menu(menu_id=menu_id)
     if not menu:
         return JSONResponse({"detail": "menu not found"}, status_code=404)
-    menu.submenus_count, menu.dishes_count = get_submenus_and_dishes_counts(menu_id=menu.id)
+    menu.submenus_count, menu.dishes_count = repo_m.get_submenus_and_dishes_counts(menu.id)
     return menu
 
 
@@ -55,7 +48,7 @@ def patch_menu(menu_id, menu: MenuCreateModel):
     updated_menu = repo_m.update_menu(menu_id=menu_id, title=menu.title, description=menu.description)
     if not updated_menu:
         return JSONResponse(content={"detail": "menu not found"}, status_code=404)
-    updated_menu.submenus_count, updated_menu.dishes_count = get_submenus_and_dishes_counts(menu_id=menu_id)
+    updated_menu.submenus_count, updated_menu.dishes_count = repo_m.get_submenus_and_dishes_counts(menu.id)
     return updated_menu
 
 
@@ -76,7 +69,7 @@ def get_list_submenus(menu_id):
     if not submenus:
         return JSONResponse(content=[], status_code=200)
     for submenu in submenus:
-        submenu.dishes_count = len(repo_d.get_dishes_of_submenu(submenu.id))
+        submenu.dishes_count = repo_d.get_dishes_count(submenu.id)
     return submenus
 
 
@@ -85,7 +78,7 @@ def get_target_submenu(menu_id, submenu_id):
     submenu = repo_s.get_submenu(submenu_id=submenu_id, menu_id=menu_id)
     if not submenu:
         return JSONResponse(content={"detail": "submenu not found"}, status_code=404)
-    submenu.dishes_count = len(repo_d.get_dishes_of_submenu(submenu.id))
+    submenu.dishes_count = repo_d.get_dishes_count(submenu.id)
     return submenu
 
 
@@ -102,7 +95,7 @@ def patch_submenu(menu_id, submenu_id, submenu: SubmenuCreateModel):
                                             description=submenu.description, menu_id=menu_id)
     if not updated_submenu:
         return JSONResponse(content={"detail": "submenu not found"}, status_code=404)
-    updated_submenu.dishes_count = len(repo_d.get_dishes_of_submenu(updated_submenu.id))
+    updated_submenu.dishes_count = repo_d.get_dishes_count(updated_submenu.id)
     return updated_submenu
 
 

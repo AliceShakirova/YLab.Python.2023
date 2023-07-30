@@ -45,5 +45,8 @@ class SubmenuRepo:
 
     def get_submenus_of_menu(self, menu_id):
         with Session(autoflush=False, bind=self.engine) as db:
-            return list(db.query(Submenu).filter_by(menu_id=str(menu_id)))
+            return db.query(Submenu).filter_by(menu_id=str(menu_id)).all()
 
+    def get_submenus_count(self, menu_id):
+        with Session(autoflush=False, bind=self.engine) as db:
+            return db.query(Submenu).filter_by(menu_id=str(menu_id)).count()

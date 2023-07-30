@@ -20,6 +20,11 @@ class DishRepo:
             dishes_of_submenu = db.query(Dish).filter_by(submenu_id=submenu_id).all()
             return dishes_of_submenu
 
+    def get_dishes_count(self, submenu_id):
+        with Session(autoflush=False, bind=self.engine) as db:
+            dishes_of_submenu = db.query(Dish).filter_by(submenu_id=submenu_id).count()
+            return dishes_of_submenu
+
     def get_dish(self, dish_id, submenu_id):
         with Session(autoflush=False, bind=self.engine) as db:
             dish = db.query(Dish).filter_by(id=str(dish_id), submenu_id=submenu_id).first()
