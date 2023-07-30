@@ -7,9 +7,9 @@ from src.Entities.dish import DishModel, DishCreateModel, DishListModel
 from src.Entities.menu import MenuModel, MenuCreateModel, MenuListModel
 from src.Entities.submenu import SubmenuModel, SubmenuCreateModel, SubmenuListModel
 
-db = Database('postgres', 'qwerty', 'localhost', 5432, 'mydb')
-app = fastapi.FastAPI()
 
+app = fastapi.FastAPI()
+db = Database('postgres', 'qwerty', 'db', 5432, 'mydb')
 repo_m = db.repo_m
 repo_s = db.repo_s
 repo_d = db.repo_d
