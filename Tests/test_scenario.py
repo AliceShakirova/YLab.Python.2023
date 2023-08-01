@@ -10,7 +10,8 @@ dish2_id = None
 
 
 @pytest.mark.order(1)
-def test_post_menu():
+def test_post_menu(start_clear_db):
+    start_clear_db()
     test_request_payload = {"title": "My menu 1", "description": "My menu description 1"}
     test_response_payload = {"title": "My menu 1",
                              "description": "My menu description 1", "submenus_count": 0, "dishes_count": 0}

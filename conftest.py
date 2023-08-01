@@ -1,6 +1,6 @@
 import pytest
 from sqlalchemy import text
-from src.main import db
+from src.service import db
 from src.Entities.menu import Menu
 from src.Entities.submenu import Submenu
 from src.Entities.dish import Dish
@@ -15,6 +15,16 @@ def clear_db():
 
     yield clear_db_func
     clear_db_func()
+
+
+@pytest.fixture
+def start_clear_db():
+    def start_clear_db_func():
+        with db.get_session() as session:
+            session.execute(text(f'TRUNCATE {Menu.__tablename__} CASCADE'))
+            session.commit()
+
+    yield start_clear_db_func
 
 
 @pytest.fixture
