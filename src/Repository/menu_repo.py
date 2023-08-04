@@ -1,8 +1,9 @@
-from sqlalchemy.orm import Session
 from sqlalchemy import func, select
+from sqlalchemy.orm import Session
+
+from src.Entities.dish import Dish
 from src.Entities.menu import Menu
 from src.Entities.submenu import Submenu
-from src.Entities.dish import Dish
 
 
 class MenuRepo:

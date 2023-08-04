@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+
 from src.Entities.submenu import Submenu
 
 

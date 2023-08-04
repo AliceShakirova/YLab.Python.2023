@@ -1,3 +1,3 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
-setup(name="YLab_Python", packages=find_packages())
+setup(name='YLab_Python', packages=find_packages())

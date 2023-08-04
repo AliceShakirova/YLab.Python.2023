@@ -1,9 +1,9 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
-from sqlalchemy_utils import database_exists, create_database
+from sqlalchemy_utils import create_database, database_exists
 
 from src.Entities.base import Base
-from src.Repository import menu_repo, dish_repo, submenu_repo
+from src.Repository import dish_repo, menu_repo, submenu_repo
 
 
 class Database:
@@ -25,5 +25,3 @@ class Database:
 
     def get_session(self):
         return Session(self.engine)
-
-

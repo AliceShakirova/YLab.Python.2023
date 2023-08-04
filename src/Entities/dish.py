@@ -1,9 +1,10 @@
-from sqlalchemy import String, ForeignKey, DECIMAL
-from sqlalchemy.orm import mapped_column, relationship
-from src.Entities.base import Base
-from pydantic import BaseModel, condecimal, field_validator, RootModel
-from typing import List
 from decimal import Decimal
+
+from pydantic import BaseModel, RootModel, condecimal, field_validator
+from sqlalchemy import DECIMAL, ForeignKey, String
+from sqlalchemy.orm import mapped_column, relationship
+
+from src.Entities.base import Base
 
 
 class Dish(Base):
@@ -12,7 +13,7 @@ class Dish(Base):
     price"""
     __tablename__ = 'dishes'
 
-    submenu_id = mapped_column(String, ForeignKey("submenus.id"), nullable=False)
+    submenu_id = mapped_column(String, ForeignKey('submenus.id'), nullable=False)
     price = mapped_column(DECIMAL(5, 2))
     submenu = relationship('Submenu', back_populates='dish', single_parent=True)
 
@@ -28,9 +29,9 @@ class DishModel(BaseModel):
     description: str
     price: str
 
-    model_config ={'from_attributes': True, 'validate_assignment': True}
+    model_config = {'from_attributes': True, 'validate_assignment': True}
 
-    @field_validator('price', mode= 'before')
+    @field_validator('price', mode='before')
     @classmethod
     def price_validator(cls, value: Decimal) -> str:
         return str(round(value, ndigits=2))
@@ -39,10 +40,10 @@ class DishModel(BaseModel):
 class DishCreateModel(BaseModel):
     title: str
     description: str
-    price: condecimal(ge=0)
+    price: condecimal(ge=0)  # type: ignore
 
-    model_config ={'from_attributes': True, 'validate_assignment': True}
+    model_config = {'from_attributes': True, 'validate_assignment': True}
 
 
 class DishListModel(RootModel):
-    root: List[DishModel]
+    root: list[DishModel]

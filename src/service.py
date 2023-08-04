@@ -1,6 +1,6 @@
-from src.Db.database import Database
 import os
 
+from src.Db.database import Database
 
 db_address = os.getenv('db_address')
 if db_address is None:

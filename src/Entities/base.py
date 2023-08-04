@@ -1,7 +1,7 @@
-from sqlalchemy import String
-from sqlalchemy.orm import mapped_column
-from sqlalchemy.orm import DeclarativeBase
 import uuid
+
+from sqlalchemy import String
+from sqlalchemy.orm import DeclarativeBase, mapped_column
 
 
 class Base(DeclarativeBase):
@@ -14,4 +14,3 @@ class Base(DeclarativeBase):
         self.id = str(uuid.uuid4())
         self.title = title
         self.description = description
-

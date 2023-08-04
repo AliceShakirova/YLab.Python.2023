@@ -1,9 +1,10 @@
 import pytest
 from sqlalchemy import text
-from src.service import db
+
+from src.Entities.dish import Dish
 from src.Entities.menu import Menu
 from src.Entities.submenu import Submenu
-from src.Entities.dish import Dish
+from src.service import db
 
 
 @pytest.fixture

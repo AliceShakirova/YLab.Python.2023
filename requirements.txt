@@ -6,3 +6,4 @@ uvicorn==0.23.1
 psycopg2==2.9.6
 pydantic==2.0.3
 setuptools==60.2.0
+pre-commit==3.3.3
