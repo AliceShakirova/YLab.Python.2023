@@ -14,7 +14,7 @@ class Submenu(Base):
     menu = relationship('Menu', back_populates='submenu', single_parent=True)
     dish = relationship('Dish', back_populates='submenu', cascade='all, delete-orphan')
 
-    def __init__(self, title, description, menu_id):
+    def __init__(self, title: str, description: str, menu_id: str) -> None:
         Base.__init__(self, title, description)
         self.menu_id = menu_id
 

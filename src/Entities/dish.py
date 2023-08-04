@@ -17,7 +17,7 @@ class Dish(Base):
     price = mapped_column(DECIMAL(5, 2))
     submenu = relationship('Submenu', back_populates='dish', single_parent=True)
 
-    def __init__(self, title, description, submenu_id, price=0):
+    def __init__(self, title: str, description: str, submenu_id: str, price: Decimal):
         Base.__init__(self, title, description)
         self.submenu_id = submenu_id
         self.price = price

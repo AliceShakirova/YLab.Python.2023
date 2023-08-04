@@ -8,7 +8,7 @@ from src.Repository import dish_repo, menu_repo, submenu_repo
 
 class Database:
 
-    def __init__(self, user, password, host, port, db_name):
+    def __init__(self, user: str, password: str, host: str, port: int, db_name: str) -> None:
         sqlalchemy_database_url = f'postgresql://{user}:{password}@{host}:{port}/{db_name}'
 
         if not database_exists(sqlalchemy_database_url):
@@ -23,5 +23,5 @@ class Database:
         self.repo_s = submenu_repo.SubmenuRepo(self.engine)
         self.repo_d = dish_repo.DishRepo(self.engine)
 
-    def get_session(self):
+    def get_session(self) -> Session:
         return Session(self.engine)
