@@ -35,7 +35,7 @@ def get_menu(menu_id: str) -> Menu | None:
     menu = repo_m.get_menu(menu_id=menu_id)
     if not menu:
         return None
-    menu.submenus_count, menu.dishes_count = repo_m.get_submenus_and_dishes_counts(menu.id)
+    menu.submenus_count, menu.dishes_count = repo_m.get_submenus_and_dishes_counts(menu_id)
     return menu
 
 
@@ -43,7 +43,7 @@ def patch_menu(menu_id: str, menu: MenuCreateModel) -> Menu | None:
     updated_menu = repo_m.update_menu(menu_id=menu_id, title=menu.title, description=menu.description)
     if updated_menu is None:
         return None
-    updated_menu.submenus_count, updated_menu.dishes_count = repo_m.get_submenus_and_dishes_counts(menu.id)
+    updated_menu.submenus_count, updated_menu.dishes_count = repo_m.get_submenus_and_dishes_counts(menu_id)
     return updated_menu
 
 
@@ -68,7 +68,7 @@ def get_submenu(menu_id: str, submenu_id: str) -> Submenu | None:
     submenu = repo_s.get_submenu(submenu_id=submenu_id, menu_id=menu_id)
     if not submenu:
         return None
-    submenu.dishes_count = repo_d.get_dishes_count(submenu.id)
+    submenu.dishes_count = repo_d.get_dishes_count(submenu_id)
     return submenu
 
 
