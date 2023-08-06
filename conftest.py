@@ -1,6 +1,7 @@
 import pytest
 from sqlalchemy import text
 
+from src.app import app
 from src.Entities.dish import Dish
 from src.Entities.menu import Menu
 from src.Entities.submenu import Submenu
@@ -65,3 +66,7 @@ def insert_dish():
 
     with db.get_session() as session:
         yield insert_dish_func
+
+
+def func_reverse(function: str, **kwargs):
+    return app.url_path_for(function, **kwargs)
