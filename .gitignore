@@ -6,3 +6,4 @@ src/Entities/__pycache__
 venv
 .idea
 YLab_Python.egg-info
+/*.env

@@ -1,17 +1,10 @@
-import os
-
 from src.Cache.caches import DishCache, MenuCache, SubmenuCache
 from src.Db.database import Database
 from src.Entities.dish import Dish, DishCreateModel, DishModel
 from src.Entities.menu import Menu, MenuCreateModel, MenuModel
 from src.Entities.submenu import Submenu, SubmenuCreateModel, SubmenuModel
 
-db_address = os.getenv('db_address')
-if db_address is None:
-    db_address = 'localhost'
-
-db = Database('postgres', 'qwerty', db_address, 5432, 'mydb')
-
+db = Database()
 repo_m = db.repo_m
 repo_s = db.repo_s
 repo_d = db.repo_d
