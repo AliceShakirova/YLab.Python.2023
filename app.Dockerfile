@@ -37,8 +37,8 @@ RUN adduser \
 RUN apt-get update && \
     apt-get install -y libpq-dev gcc
 RUN --mount=type=cache,target=/root/.cache/pip \
-    --mount=type=bind,source=requirements.txt,target=requirements.txt \
-    python -m pip install -r requirements.txt
+    --mount=type=bind,source=requirements-production.txt,target=requirements-production.txt \
+    python -m pip install -r requirements-production.txt
 
 # Switch to the non-privileged user to run the application.
 USER appuser

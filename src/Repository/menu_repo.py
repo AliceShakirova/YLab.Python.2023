@@ -38,9 +38,7 @@ class MenuRepo:
                 menu_to_update.description = description
                 db.commit()
                 db.refresh(menu_to_update)
-                return menu_to_update
-            else:
-                return None
+            return menu_to_update
 
     def delete_menu(self, menu_id: str) -> bool:
         with Session(autoflush=False, bind=self.engine) as db:

@@ -6,7 +6,7 @@ from src.app import app
 client = TestClient(app)
 
 
-def test_get_all_dish_empty(clear_db, insert_menu, insert_submenu):
+def test_get_all_dish_empty(clear_storage, insert_menu, insert_submenu):
     test_response_payload = []
     test_menu = {'id': '', 'title': 'My menu 1', 'description': 'My menu description 1'}
     test_menu['id'] = insert_menu(test_menu['title'], test_menu['description']).id
@@ -18,7 +18,7 @@ def test_get_all_dish_empty(clear_db, insert_menu, insert_submenu):
     assert response.json() == test_response_payload
 
 
-def test_post_dish(clear_db, insert_menu, insert_submenu):
+def test_post_dish(clear_storage, insert_menu, insert_submenu):
     test_request_payload = {'title': 'My dish 1', 'description': 'My dish description 1', 'price': '12.50'}
     test_response_payload = {'id': '', 'title': 'My dish 1', 'description': 'My dish description 1', 'price': '12.50'}
     test_menu = {'id': '', 'title': 'My menu 1', 'description': 'My menu description 1'}
@@ -32,7 +32,7 @@ def test_post_dish(clear_db, insert_menu, insert_submenu):
     assert response.json() == test_response_payload
 
 
-def test_get_all_dish(clear_db, insert_menu, insert_submenu, insert_dish):
+def test_get_all_dish(clear_storage, insert_menu, insert_submenu, insert_dish):
     test_response_payload = [{'id': '', 'title': 'My dish 1', 'description': 'My dish description 1', 'price': '12.50'}]
     test_menu = {'id': '', 'title': 'My menu 1', 'description': 'My menu description 1'}
     test_menu['id'] = insert_menu(test_menu['title'], test_menu['description']).id
@@ -47,7 +47,7 @@ def test_get_all_dish(clear_db, insert_menu, insert_submenu, insert_dish):
     assert response.json() == test_response_payload
 
 
-def test_get_target_dish(clear_db, insert_menu, insert_submenu, insert_dish):
+def test_get_target_dish(clear_storage, insert_menu, insert_submenu, insert_dish):
     test_response_payload = {'id': '', 'title': 'My dish 1', 'description': 'My dish description 1', 'price': '12.50'}
     test_menu = {'id': '', 'title': 'My menu 1', 'description': 'My menu description 1'}
     test_menu['id'] = insert_menu(test_menu['title'], test_menu['description']).id
@@ -61,7 +61,7 @@ def test_get_target_dish(clear_db, insert_menu, insert_submenu, insert_dish):
     assert response.json() == test_response_payload
 
 
-def test_get_target_dish_not_found(clear_db, insert_menu, insert_submenu):
+def test_get_target_dish_not_found(clear_storage, insert_menu, insert_submenu):
     test_response_payload = {'detail': 'dish not found'}
     test_menu = {'id': '', 'title': 'My menu 1', 'description': 'My menu description 1'}
     test_menu['id'] = insert_menu(test_menu['title'], test_menu['description']).id
@@ -74,7 +74,7 @@ def test_get_target_dish_not_found(clear_db, insert_menu, insert_submenu):
     assert response.json() == test_response_payload
 
 
-def test_patch_dish(clear_db, insert_menu, insert_submenu, insert_dish):
+def test_patch_dish(clear_storage, insert_menu, insert_submenu, insert_dish):
     test_response_payload = {'id': '', 'title': 'My updated dish 1', 'description': 'My updated dish description 1',
                              'price': '14.50'}
     test_menu = {'id': '', 'title': 'My menu 1', 'description': 'My menu description 1'}
@@ -90,7 +90,7 @@ def test_patch_dish(clear_db, insert_menu, insert_submenu, insert_dish):
     assert response.json() == test_response_payload
 
 
-def test_patch_dish_not_found(clear_db, insert_menu, insert_submenu):
+def test_patch_dish_not_found(clear_storage, insert_menu, insert_submenu):
     test_response_payload = {'detail': 'dish not found'}
     test_menu = {'id': '', 'title': 'My menu 1', 'description': 'My menu description 1'}
     test_menu['id'] = insert_menu(test_menu['title'], test_menu['description']).id
@@ -103,7 +103,7 @@ def test_patch_dish_not_found(clear_db, insert_menu, insert_submenu):
     assert response.json() == test_response_payload
 
 
-def test_delete_dish(clear_db, insert_menu, insert_submenu, insert_dish):
+def test_delete_dish(clear_storage, insert_menu, insert_submenu, insert_dish):
     test_response_payload = {'status': True, 'message': 'The dish has been deleted'}
     test_menu = {'id': '', 'title': 'My menu 1', 'description': 'My menu description 1'}
     test_menu['id'] = insert_menu(test_menu['title'], test_menu['description']).id
@@ -118,7 +118,7 @@ def test_delete_dish(clear_db, insert_menu, insert_submenu, insert_dish):
     assert response.json() == test_response_payload
 
 
-def test_delete_dish_not_found(clear_db, insert_menu, insert_submenu):
+def test_delete_dish_not_found(clear_storage, insert_menu, insert_submenu):
     test_response_payload = {'status': False, 'message': 'dish not found'}
     test_menu = {'id': '', 'title': 'My menu 1', 'description': 'My menu description 1'}
     test_menu['id'] = insert_menu(test_menu['title'], test_menu['description']).id

@@ -34,9 +34,7 @@ class SubmenuRepo:
                 submenu_to_update.description = description
                 db.commit()
                 db.refresh(submenu_to_update)
-                return submenu_to_update
-            else:
-                return None
+            return submenu_to_update
 
     def delete_submenu(self, submenu_id: str, menu_id: str) -> bool:
         with Session(autoflush=False, bind=self.engine) as db:
@@ -47,9 +45,9 @@ class SubmenuRepo:
             db.commit()
             return True
 
-    def get_submenus_of_menu(self, menu_id: str) -> list[type[Submenu]]:
+    def get_submenus_of_menu(self, menu_id: str) -> list[Submenu]:
         with Session(autoflush=False, bind=self.engine) as db:
-            return db.query(Submenu).filter_by(menu_id=str(menu_id)).all()
+            return db.query(Submenu).filter_by(menu_id=str(menu_id)).all()  # type: ignore
 
     def get_submenus_count(self, menu_id: str) -> int:
         with Session(autoflush=False, bind=self.engine) as db:

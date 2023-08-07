@@ -6,7 +6,7 @@ from src.app import app
 client = TestClient(app)
 
 
-def test_get_all_submenu_empty(clear_db, insert_menu):
+def test_get_all_submenu_empty(clear_storage, insert_menu):
     test_response_payload = []
     test_menu = {'id': '', 'title': 'My menu 1', 'description': 'My menu description 1', 'dishes_count': 0}
     test_menu['id'] = insert_menu(test_menu['title'], test_menu['description']).id
@@ -15,7 +15,7 @@ def test_get_all_submenu_empty(clear_db, insert_menu):
     assert response.json() == test_response_payload
 
 
-def test_post_submenu(clear_db, insert_menu):
+def test_post_submenu(clear_storage, insert_menu):
     test_request_payload = {'title': 'My submenu 1', 'description': 'My submenu description 1'}
     test_response_payload = {'id': '', 'title': 'My submenu 1',
                              'description': 'My submenu description 1', 'dishes_count': 0}
@@ -27,7 +27,7 @@ def test_post_submenu(clear_db, insert_menu):
     assert response.json() == test_response_payload
 
 
-def test_get_all_submenu(clear_db, insert_menu, insert_submenu):
+def test_get_all_submenu(clear_storage, insert_menu, insert_submenu):
     test_response_payload = [{'id': '', 'title': 'My submenu 1',
                               'description': 'My submenu description 1', 'dishes_count': 0}]
     test_menu = {'id': '', 'title': 'My menu 1', 'description': 'My menu description 1', 'dishes_count': 0}
@@ -40,7 +40,7 @@ def test_get_all_submenu(clear_db, insert_menu, insert_submenu):
     assert response.json() == test_response_payload
 
 
-def test_get_target_submenu(clear_db, insert_menu, insert_submenu):
+def test_get_target_submenu(clear_storage, insert_menu, insert_submenu):
     test_response_payload = {'id': '', 'title': 'My submenu 1', 'description': 'My submenu description 1',
                              'dishes_count': 0}
     test_menu = {'id': '', 'title': 'My menu 1', 'description': 'My menu description 1', 'dishes_count': 0}
@@ -54,7 +54,7 @@ def test_get_target_submenu(clear_db, insert_menu, insert_submenu):
     assert response.json() == test_response_payload
 
 
-def test_get_target_submenu_not_found(clear_db, insert_menu):
+def test_get_target_submenu_not_found(clear_storage, insert_menu):
     test_response_payload = {'detail': 'submenu not found'}
     test_menu = {'id': '', 'title': 'My menu 1', 'description': 'My menu description 1', 'dishes_count': 0}
     test_menu['id'] = insert_menu(test_menu['title'], test_menu['description']).id
@@ -64,7 +64,7 @@ def test_get_target_submenu_not_found(clear_db, insert_menu):
     assert response.json() == test_response_payload
 
 
-def test_patch_submenu(clear_db, insert_menu, insert_submenu):
+def test_patch_submenu(clear_storage, insert_menu, insert_submenu):
     test_response_payload = {'id': '', 'title': 'My updated submenu 1',
                              'description': 'My updated submenu description 1', 'dishes_count': 0}
     test_menu = {'id': '', 'title': 'My menu 1', 'description': 'My menu description 1', 'dishes_count': 0}
@@ -77,7 +77,7 @@ def test_patch_submenu(clear_db, insert_menu, insert_submenu):
     assert response.json() == test_response_payload
 
 
-def test_patch_submenu_not_found(clear_db, insert_menu):
+def test_patch_submenu_not_found(clear_storage, insert_menu):
     test_response_payload = {'detail': 'submenu not found'}
     test_menu = {'id': '', 'title': 'My menu 1', 'description': 'My menu description 1', 'dishes_count': 0}
     test_menu['id'] = insert_menu(test_menu['title'], test_menu['description']).id
@@ -87,7 +87,7 @@ def test_patch_submenu_not_found(clear_db, insert_menu):
     assert response.json() == test_response_payload
 
 
-def test_delete_submenu(clear_db, insert_menu, insert_submenu):
+def test_delete_submenu(clear_storage, insert_menu, insert_submenu):
     test_response_payload = {'status': True, 'message': 'The submenu has been deleted'}
     test_menu = {'id': '', 'title': 'My menu 1', 'description': 'My menu description 1', 'dishes_count': 0}
     test_menu['id'] = insert_menu(test_menu['title'], test_menu['description']).id
@@ -100,7 +100,7 @@ def test_delete_submenu(clear_db, insert_menu, insert_submenu):
     assert response.json() == test_response_payload
 
 
-def test_delete_submenu_not_found(clear_db, insert_menu):
+def test_delete_submenu_not_found(clear_storage, insert_menu):
     test_response_payload = {'status': False, 'message': 'submenu not found'}
     test_menu = {'id': '', 'title': 'My menu 1', 'description': 'My menu description 1', 'dishes_count': 0}
     test_menu['id'] = insert_menu(test_menu['title'], test_menu['description'])

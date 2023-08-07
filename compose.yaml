@@ -14,8 +14,13 @@ services:
       dockerfile: app.Dockerfile
     ports:
       - 8000:8000
+    environment:
+      db_address: "db"
+      REDIS_OM_URL: "redis://@redis-cache:6379"
     depends_on:
       db:
+        condition: service_healthy
+      redis-cache:
         condition: service_healthy
   db:
     image: postgres:13-bullseye
@@ -28,6 +33,16 @@ services:
       - 5432
     healthcheck:
       test: [ "CMD", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  redis-cache:
+    image: redis/redis-stack-server
+    restart: always
+    expose:
+      - 6379
+    healthcheck:
+      test: [ "CMD-SHELL", "redis-cli ping | grep PONG" ]
       interval: 10s
       timeout: 5s
       retries: 5

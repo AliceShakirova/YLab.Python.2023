@@ -1,6 +1,8 @@
 from decimal import Decimal
+from typing import SupportsRound
 
 from pydantic import BaseModel, RootModel, condecimal, field_validator
+from pydantic.v1 import ConfigDict
 from sqlalchemy import DECIMAL, ForeignKey, String
 from sqlalchemy.orm import mapped_column, relationship
 
@@ -29,11 +31,14 @@ class DishModel(BaseModel):
     description: str
     price: str
 
-    model_config = {'from_attributes': True, 'validate_assignment': True}
+    model_config = ConfigDict(from_attributes=True, validate_assignment=True)
 
     @field_validator('price', mode='before')
     @classmethod
-    def price_validator(cls, value: Decimal) -> str:
+    def price_validator(cls, value: SupportsRound[Decimal]) -> str:
+        # в случае десериализации из кэша будет строка
+        if type(value) is str:
+            return value
         return str(round(value, ndigits=2))
 
 

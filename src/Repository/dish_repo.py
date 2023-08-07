@@ -37,15 +37,13 @@ class DishRepo:
                     submenu_id: str) -> Dish | None:
         with Session(autoflush=False, bind=self.engine) as db:
             dish_to_update = db.query(Dish).filter_by(id=str(dish_id), submenu_id=submenu_id).first()
-            if dish_to_update:
+            if dish_to_update is not None:
                 dish_to_update.title = title
                 dish_to_update.description = description
                 dish_to_update.price = price
                 db.commit()
                 db.refresh(dish_to_update)
-                return dish_to_update
-            else:
-                return None
+            return dish_to_update
 
     def delete_dish(self, dish_id: str, submenu_id: str) -> bool:
         with Session(autoflush=False, bind=self.engine) as db:

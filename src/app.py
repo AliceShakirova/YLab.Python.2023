@@ -17,17 +17,17 @@ app = fastapi.FastAPI()
 
 
 @app.get('/api/v1/menus', response_model=MenuListModel)
-def get_list_menus() -> list[type[Menu]]:
+def get_list_menus() -> list[type[Menu]] | list[MenuModel]:
     return service.get_all_menus()
 
 
 @app.post('/api/v1/menus', response_model=MenuModel, status_code=201)
-def post_menu(menu: MenuCreateModel) -> Menu:
+def post_menu(menu: MenuCreateModel) -> Menu | MenuModel:
     return service.post_menu(menu=menu)
 
 
 @app.get('/api/v1/menus/{menu_id}', response_model=MenuModel)
-def get_target_menu(menu_id: str) -> Menu | JSONResponse:
+def get_target_menu(menu_id: str) -> MenuModel | JSONResponse:
     menu = service.get_menu(menu_id)
     if not menu:
         return JSONResponse({'detail': 'menu not found'}, 404)
@@ -36,7 +36,7 @@ def get_target_menu(menu_id: str) -> Menu | JSONResponse:
 
 
 @app.patch('/api/v1/menus/{menu_id}', response_model=MenuModel)
-def patch_menu(menu_id: str, menu: MenuCreateModel) -> Menu | JSONResponse:
+def patch_menu(menu_id: str, menu: MenuCreateModel) -> MenuModel | JSONResponse:
     updated_menu = service.patch_menu(menu_id, menu)
     if not updated_menu:
         return JSONResponse({'detail': 'menu not found'}, 404)
@@ -56,7 +56,7 @@ def delete_menu(menu_id: str) -> JSONResponse:
 
 
 @app.get('/api/v1/menus/{menu_id}/submenus', response_model=SubmenuListModel)
-def get_list_submenus(menu_id: str) -> list[type[Submenu]]:
+def get_list_submenus(menu_id: str) -> list[Submenu] | list[SubmenuModel]:
     return service.get_all_submenus(menu_id)
 
 
@@ -70,12 +70,12 @@ def get_target_submenu(menu_id: str, submenu_id: str) -> Submenu | JSONResponse:
 
 
 @app.post('/api/v1/menus/{menu_id}/submenus', response_model=SubmenuModel, status_code=201)
-def post_submenu(menu_id: str, submenu: SubmenuCreateModel) -> Submenu:
+def post_submenu(menu_id: str, submenu: SubmenuCreateModel) -> Submenu | SubmenuModel:
     return service.post_submenu(menu_id, submenu)
 
 
 @app.patch('/api/v1/menus/{menu_id}/submenus/{submenu_id}', response_model=SubmenuModel)
-def patch_submenu(menu_id: str, submenu_id: str, submenu: SubmenuCreateModel) -> Submenu | JSONResponse:
+def patch_submenu(menu_id: str, submenu_id: str, submenu: SubmenuCreateModel) -> Submenu | SubmenuModel | JSONResponse:
     updated_submenu = service.patch_submenu(menu_id, submenu_id, submenu)
     if not updated_submenu:
         return JSONResponse({'detail': 'submenu not found'}, 404)
@@ -96,21 +96,21 @@ def delete_submenu(menu_id: str, submenu_id: str) -> JSONResponse:
 
 
 @app.get('/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes', response_model=DishListModel)
-def get_list_dishes(menu_id: str, submenu_id: str) -> list[type[Dish]]:
+def get_list_dishes(menu_id: str, submenu_id: str) -> list[type[Dish]] | list[DishModel] | None:
     return service.get_all_dishes(menu_id, submenu_id)
 
 
 @app.get('/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}', response_model=DishModel)
 def get_target_dish(menu_id: str, submenu_id: str, dish_id: str) -> Dish | JSONResponse:
     dish = service.get_dish(menu_id, submenu_id, dish_id)
-    if not dish:
+    if dish is None:
         return JSONResponse({'detail': 'dish not found'}, 404)
     else:
         return dish
 
 
 @app.post('/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes', response_model=DishModel, status_code=201)
-def post_dish(menu_id: str, submenu_id: str, dish: DishCreateModel) -> Dish | JSONResponse:
+def post_dish(menu_id: str, submenu_id: str, dish: DishCreateModel) -> Dish | DishModel | JSONResponse:
     new_dish = service.post_dish(menu_id, submenu_id, dish)
     if not new_dish:
         return JSONResponse({'detail': 'submenu not found'}, 404)
@@ -119,7 +119,7 @@ def post_dish(menu_id: str, submenu_id: str, dish: DishCreateModel) -> Dish | JS
 
 
 @app.patch('/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}', response_model=DishModel)
-def patch_dish(menu_id: str, submenu_id: str, dish_id: str, dish: DishCreateModel) -> Dish | JSONResponse:
+def patch_dish(menu_id: str, submenu_id: str, dish_id: str, dish: DishCreateModel) -> Dish | DishModel | JSONResponse:
     updated_dish = service.patch_dish(menu_id, submenu_id, dish_id, dish)
     if not updated_dish:
         return JSONResponse({'detail': 'dish not found'}, 404)
