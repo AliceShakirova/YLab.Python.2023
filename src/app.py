@@ -16,6 +16,11 @@ app = fastapi.FastAPI()
 # menu
 
 
+@app.get('/api/v1/menus/all', response_model=list)
+def get_all_menus_submenus_and_dishes() -> list:
+    return service.get_all_menus_submenus_and_dishes()
+
+
 @app.get('/api/v1/menus', response_model=MenuListModel)
 def get_list_menus() -> list[type[Menu]] | list[MenuModel]:
     return service.get_all_menus()

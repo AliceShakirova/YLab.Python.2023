@@ -14,6 +14,16 @@ submenu_cache = SubmenuCache()
 dish_cache = DishCache()
 
 
+def get_all_menus_submenus_and_dishes() -> list:
+    cached_list = MenuCache.get_all_menus_submenus_and_dish()
+    if cached_list:
+        return cached_list
+    all_inst = repo_m.get_all_menus_submenus_and_dishes()
+    if all_inst is None:
+        return []
+    return all_inst
+
+
 def get_all_menus() -> list[type[Menu]] | list[MenuModel]:
     cached_all_menus = MenuCache.get_all_menus()
     if cached_all_menus:

@@ -57,3 +57,14 @@ class MenuRepo:
                 .join(Dish, Submenu.id == Dish.submenu_id, isouter=True)
                 .where(Submenu.menu_id == menu_id)
             ).first()
+
+    def get_all_menus_submenus_and_dishes(self):
+        with Session(autoflush=False, bind=self.engine) as db:
+            return db.execute(
+                select(Menu)
+                .join(Submenu, Submenu.menu_id == Menu.id, isouter=True)
+                .where(Submenu.menu_id == Menu.id)
+                .join(Dish, Submenu.id == Dish.submenu_id, isouter=True)
+                .where(Submenu.menu_id == Menu.id)
+                .order_by(Menu.id)
+            ).all()
