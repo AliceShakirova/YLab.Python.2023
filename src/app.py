@@ -1,4 +1,4 @@
-import fastapi
+from fastapi import BackgroundTasks, FastAPI
 from starlette.responses import JSONResponse
 
 from src import service
@@ -11,7 +11,7 @@ from src.Entities.submenu import (
     SubmenuModel,
 )
 
-app = fastapi.FastAPI()
+app = FastAPI()
 
 # menu
 
@@ -27,8 +27,8 @@ def get_list_menus() -> list[type[Menu]] | list[MenuModel]:
 
 
 @app.post('/api/v1/menus', response_model=MenuModel, status_code=201)
-def post_menu(menu: MenuCreateModel) -> Menu | MenuModel:
-    return service.post_menu(menu=menu)
+def post_menu(menu: MenuCreateModel, background_tasks: BackgroundTasks) -> Menu | MenuModel:
+    return service.post_menu(menu, background_tasks)
 
 
 @app.get('/api/v1/menus/{menu_id}', response_model=MenuModel)
@@ -41,8 +41,8 @@ def get_target_menu(menu_id: str) -> MenuModel | JSONResponse:
 
 
 @app.patch('/api/v1/menus/{menu_id}', response_model=MenuModel)
-def patch_menu(menu_id: str, menu: MenuCreateModel) -> MenuModel | JSONResponse:
-    updated_menu = service.patch_menu(menu_id, menu)
+def patch_menu(menu_id: str, menu: MenuCreateModel, background_tasks: BackgroundTasks) -> MenuModel | JSONResponse:
+    updated_menu = service.patch_menu(menu_id, menu, background_tasks)
     if not updated_menu:
         return JSONResponse({'detail': 'menu not found'}, 404)
     else:
@@ -50,8 +50,8 @@ def patch_menu(menu_id: str, menu: MenuCreateModel) -> MenuModel | JSONResponse:
 
 
 @app.delete('/api/v1/menus/{menu_id}')
-def delete_menu(menu_id: str) -> JSONResponse:
-    result_of_delete = service.delete_menu(menu_id)
+def delete_menu(menu_id: str, background_tasks: BackgroundTasks) -> JSONResponse:
+    result_of_delete = service.delete_menu(menu_id, background_tasks)
     if not result_of_delete:
         return JSONResponse({'status': result_of_delete, 'message': 'menu not found'}, 404)
     else:
@@ -66,7 +66,7 @@ def get_list_submenus(menu_id: str) -> list[Submenu] | list[SubmenuModel]:
 
 
 @app.get('/api/v1/menus/{menu_id}/submenus/{submenu_id}', response_model=SubmenuModel)
-def get_target_submenu(menu_id: str, submenu_id: str) -> Submenu | JSONResponse:
+def get_target_submenu(menu_id: str, submenu_id: str) -> SubmenuModel | JSONResponse:
     submenu = service.get_submenu(menu_id, submenu_id)
     if not submenu:
         return JSONResponse({'detail': 'submenu not found'}, 404)
@@ -75,13 +75,14 @@ def get_target_submenu(menu_id: str, submenu_id: str) -> Submenu | JSONResponse:
 
 
 @app.post('/api/v1/menus/{menu_id}/submenus', response_model=SubmenuModel, status_code=201)
-def post_submenu(menu_id: str, submenu: SubmenuCreateModel) -> Submenu | SubmenuModel:
-    return service.post_submenu(menu_id, submenu)
+def post_submenu(menu_id: str, submenu: SubmenuCreateModel, background_tasks: BackgroundTasks) -> Submenu | SubmenuModel:
+    return service.post_submenu(menu_id, submenu, background_tasks)
 
 
 @app.patch('/api/v1/menus/{menu_id}/submenus/{submenu_id}', response_model=SubmenuModel)
-def patch_submenu(menu_id: str, submenu_id: str, submenu: SubmenuCreateModel) -> Submenu | SubmenuModel | JSONResponse:
-    updated_submenu = service.patch_submenu(menu_id, submenu_id, submenu)
+def patch_submenu(menu_id: str, submenu_id: str, submenu: SubmenuCreateModel,
+                  background_tasks: BackgroundTasks) -> Submenu | SubmenuModel | JSONResponse:
+    updated_submenu = service.patch_submenu(menu_id, submenu_id, submenu, background_tasks)
     if not updated_submenu:
         return JSONResponse({'detail': 'submenu not found'}, 404)
     else:
@@ -89,8 +90,8 @@ def patch_submenu(menu_id: str, submenu_id: str, submenu: SubmenuCreateModel) ->
 
 
 @app.delete('/api/v1/menus/{menu_id}/submenus/{submenu_id}')
-def delete_submenu(menu_id: str, submenu_id: str) -> JSONResponse:
-    result_of_delete = service.delete_submenu(menu_id, submenu_id)
+def delete_submenu(menu_id: str, submenu_id: str, background_tasks: BackgroundTasks) -> JSONResponse:
+    result_of_delete = service.delete_submenu(menu_id, submenu_id, background_tasks)
     if not result_of_delete:
         return JSONResponse({'status': result_of_delete, 'message': 'submenu not found'}, 404)
     else:
@@ -115,8 +116,9 @@ def get_target_dish(menu_id: str, submenu_id: str, dish_id: str) -> Dish | JSONR
 
 
 @app.post('/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes', response_model=DishModel, status_code=201)
-def post_dish(menu_id: str, submenu_id: str, dish: DishCreateModel) -> Dish | DishModel | JSONResponse:
-    new_dish = service.post_dish(menu_id, submenu_id, dish)
+def post_dish(menu_id: str, submenu_id: str, dish: DishCreateModel,
+              background_tasks: BackgroundTasks) -> Dish | DishModel | JSONResponse:
+    new_dish = service.post_dish(menu_id, submenu_id, dish, background_tasks)
     if not new_dish:
         return JSONResponse({'detail': 'submenu not found'}, 404)
     else:
@@ -124,8 +126,9 @@ def post_dish(menu_id: str, submenu_id: str, dish: DishCreateModel) -> Dish | Di
 
 
 @app.patch('/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}', response_model=DishModel)
-def patch_dish(menu_id: str, submenu_id: str, dish_id: str, dish: DishCreateModel) -> Dish | DishModel | JSONResponse:
-    updated_dish = service.patch_dish(menu_id, submenu_id, dish_id, dish)
+def patch_dish(menu_id: str, submenu_id: str, dish_id: str, dish: DishCreateModel,
+               background_tasks: BackgroundTasks) -> Dish | DishModel | JSONResponse:
+    updated_dish = service.patch_dish(menu_id, submenu_id, dish_id, dish, background_tasks)
     if not updated_dish:
         return JSONResponse({'detail': 'dish not found'}, 404)
     else:
@@ -133,8 +136,8 @@ def patch_dish(menu_id: str, submenu_id: str, dish_id: str, dish: DishCreateMode
 
 
 @app.delete('/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}')
-def delete_dish(menu_id: str, submenu_id: str, dish_id: str) -> JSONResponse:
-    result_of_delete = service.delete_dish(menu_id, submenu_id, dish_id)
+def delete_dish(menu_id: str, submenu_id: str, dish_id: str, background_tasks: BackgroundTasks) -> JSONResponse:
+    result_of_delete = service.delete_dish(menu_id, submenu_id, dish_id, background_tasks)
     if not result_of_delete:
         return JSONResponse({'status': result_of_delete, 'message': 'dish not found'}, 404)
     else:

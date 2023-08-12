@@ -23,29 +23,6 @@ class MenuCache:
         pass
 
     @classmethod
-    def get_all_menus_submenus_and_dish(cls) -> list:
-        list_of_all_inst = []
-        all_menus = cls.get_all_menus()
-        all_submenus = []
-        for menu in all_menus:
-            submenus_of_menu = SubmenuCache.get_submenus(menu.id)
-            all_submenus.extend(submenus_of_menu)
-        all_dishes = []
-        for submenu in all_submenus:
-            dishes_of_submenu = DishCache.get_dishes_of_submenu(submenu.id)
-            all_dishes.extend(dishes_of_submenu)
-
-        for menu in all_menus:
-            list_of_all_inst.append(menu)
-            for submenu in all_submenus:
-                if submenu.menu_id == menu.id:
-                    list_of_all_inst.append(submenu)
-                    for dish in all_dishes:
-                        if dish.submenu_id == submenu.id:
-                            list_of_all_inst.append(dish)
-        return list_of_all_inst
-
-    @classmethod
     def get_all_menus(cls) -> list[MenuModel]:
         all_menu_ids = cls.get_all_menu_ids()
         if len(all_menu_ids) == 0:
@@ -251,10 +228,9 @@ class DishCache:
         return DishModel.model_validate_json(dish_json)
 
     @classmethod
-    def update_dish(cls, dish: Dish) -> DishModel:
+    def update_dish(cls, dish: Dish) -> None:
         model: DishModel = DishModel.model_validate(dish, from_attributes=True)
         redisCache.set(model.id, model.model_dump_json(), ex=cache_settings.CACHE_EXPIRE_SECONDS)
-        return model
 
     @classmethod
     def delete_dish(cls, menu_id: str, submenu_id: str, dish_id: str):

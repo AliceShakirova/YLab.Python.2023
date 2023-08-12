@@ -61,7 +61,7 @@ class MenuRepo:
     def get_all_menus_submenus_and_dishes(self):
         with Session(autoflush=False, bind=self.engine) as db:
             return db.execute(
-                select(Menu)
+                select(Menu, Submenu, Dish)
                 .join(Submenu, Submenu.menu_id == Menu.id, isouter=True)
                 .where(Submenu.menu_id == Menu.id)
                 .join(Dish, Submenu.id == Dish.submenu_id, isouter=True)

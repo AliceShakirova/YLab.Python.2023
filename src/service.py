@@ -1,3 +1,5 @@
+from fastapi import BackgroundTasks
+
 from src.Cache.caches import DishCache, MenuCache, SubmenuCache
 from src.Db.database import Database
 from src.Entities.dish import Dish, DishCreateModel, DishModel
@@ -15,12 +17,47 @@ dish_cache = DishCache()
 
 
 def get_all_menus_submenus_and_dishes() -> list:
-    cached_list = MenuCache.get_all_menus_submenus_and_dish()
-    if cached_list:
-        return cached_list
-    all_inst = repo_m.get_all_menus_submenus_and_dishes()
-    if all_inst is None:
+    all_inst_raw = repo_m.get_all_menus_submenus_and_dishes()
+    if all_inst_raw is None:
         return []
+    else:
+        all_inst = parse_all_inst(all_inst_raw)
+        all_inst_ready = []
+        for elem in all_inst:
+            if type(elem) is Menu:
+                all_inst_ready.append(MenuModel.model_validate(elem, from_attributes=True))
+            elif type(elem) is Submenu:
+                all_inst_ready.append(SubmenuModel.model_validate(elem, from_attributes=True))
+            elif type(elem) is Dish:
+                all_inst_ready.append(DishModel.model_validate(elem, from_attributes=True))
+    return list(all_inst_ready)
+
+
+def parse_all_inst(all_inst_raw: list) -> list:
+    all_inst_raw = all_inst_raw
+    all_inst = []
+    last_menu = MenuModel
+    last_submenu = SubmenuModel
+    submenus_count, dishes_count = 0, 0
+    for elem in all_inst_raw[0]:
+        if type(elem) is Menu:
+            if elem == last_menu:
+                continue
+            elem.submenus_count = submenus_count
+            elem.dishes_count = dishes_count
+            all_inst.append(elem)
+            last_menu = elem
+        elif type(elem) is Submenu:
+            if elem.id == last_submenu:
+                continue
+            elem.dishes_count = dishes_count
+            all_inst.append(elem)
+            last_submenu = elem
+            last_menu.submenus_count += 1
+        elif type(elem) is Dish:
+            all_inst.append(elem)
+            last_menu.dishes_count += 1
+            last_submenu.dishes_count += 1
     return all_inst
 
 
@@ -37,10 +74,11 @@ def get_all_menus() -> list[type[Menu]] | list[MenuModel]:
     return all_menus
 
 
-def post_menu(menu: MenuCreateModel) -> MenuModel:
+def post_menu(menu: MenuCreateModel, background_tasks: BackgroundTasks) -> MenuModel:
     new_menu = repo_m.create_menu(title=menu.title, description=menu.description)
     new_menu.submenus_count, new_menu.dishes_count = 0, 0
-    return menu_cache.add_menu(new_menu)
+    background_tasks.add_task(menu_cache.add_menu, new_menu)
+    return new_menu
 
 
 def get_menu(menu_id: str) -> MenuModel | None:
@@ -53,17 +91,18 @@ def get_menu(menu_id: str) -> MenuModel | None:
     return menu
 
 
-def patch_menu(menu_id: str, menu: MenuCreateModel) -> MenuModel | None:
+def patch_menu(menu_id: str, menu: MenuCreateModel, background_tasks: BackgroundTasks) -> MenuModel | None:
     updated_menu = repo_m.update_menu(menu_id=menu_id, title=menu.title, description=menu.description)
     if updated_menu is None:
         return None
     updated_menu.submenus_count, updated_menu.dishes_count = repo_m.get_submenus_and_dishes_counts(menu_id)
-    return menu_cache.update_menu(updated_menu)
+    background_tasks.add_task(menu_cache.update_menu, updated_menu)
+    return updated_menu
 
 
-def delete_menu(menu_id: str) -> bool:
+def delete_menu(menu_id: str, background_tasks: BackgroundTasks) -> bool:
     deleted = repo_m.delete_menu(menu_id=menu_id)
-    menu_cache.delete_menu(menu_id)
+    background_tasks.add_task(menu_cache.delete_menu, menu_id)
     return deleted
 
 
@@ -93,24 +132,27 @@ def get_submenu(menu_id: str, submenu_id: str) -> SubmenuModel | None:
     return submenu
 
 
-def post_submenu(menu_id: str, submenu: SubmenuCreateModel) -> SubmenuModel:
+def post_submenu(menu_id: str, submenu: SubmenuCreateModel, background_tasks: BackgroundTasks) -> SubmenuModel:
     new_submenu = repo_s.create_submenu(title=submenu.title, description=submenu.description, menu_id=menu_id)
     new_submenu.dishes_count = 0
-    return submenu_cache.add_submenu(menu_id, new_submenu)
+    background_tasks.add_task(submenu_cache.add_submenu, menu_id, new_submenu)
+    return new_submenu
 
 
-def patch_submenu(menu_id: str, submenu_id: str, submenu: SubmenuCreateModel) -> SubmenuModel | None:
+def patch_submenu(menu_id: str, submenu_id: str, submenu: SubmenuCreateModel,
+                  background_tasks: BackgroundTasks) -> SubmenuModel | None:
     updated_submenu = repo_s.update_submenu(submenu_id=submenu_id, title=submenu.title,
                                             description=submenu.description, menu_id=menu_id)
     if updated_submenu is None:
         return None
     updated_submenu.dishes_count = repo_d.get_dishes_count(updated_submenu.id)
-    return submenu_cache.update_submenu(updated_submenu)
+    background_tasks.add_task(submenu_cache.update_submenu, updated_submenu)
+    return updated_submenu
 
 
-def delete_submenu(menu_id: str, submenu_id: str) -> bool:
+def delete_submenu(menu_id: str, submenu_id: str, background_tasks: BackgroundTasks) -> bool:
     deleted = repo_s.delete_submenu(submenu_id=submenu_id, menu_id=menu_id)
-    submenu_cache.delete_submenu(menu_id, submenu_id)
+    background_tasks.add_task(submenu_cache.delete_submenu, menu_id, submenu_id)
     return deleted
 
 
@@ -148,7 +190,8 @@ def get_dish(menu_id: str, submenu_id: str, dish_id: str) -> Dish | DishModel | 
     return dish
 
 
-def post_dish(menu_id: str, submenu_id: str, dish: DishCreateModel) -> DishModel | None:
+def post_dish(menu_id: str, submenu_id: str, dish: DishCreateModel,
+              background_tasks: BackgroundTasks) -> DishModel | None:
     submenu = submenu_cache.get_submenu(submenu_id)
     if submenu is None:
         submenu = repo_s.get_submenu(submenu_id=submenu_id, menu_id=menu_id)
@@ -156,10 +199,12 @@ def post_dish(menu_id: str, submenu_id: str, dish: DishCreateModel) -> DishModel
         return None
     new_dish = repo_d.create_dish(title=dish.title, description=dish.description, submenu_id=submenu_id,
                                   price=dish.price)
-    return dish_cache.add_dish(menu_id, submenu_id, new_dish)
+    background_tasks.add_task(dish_cache.add_dish, menu_id, submenu_id, new_dish)
+    return new_dish
 
 
-def patch_dish(menu_id: str, submenu_id: str, dish_id: str, dish: DishCreateModel) -> DishModel | None:
+def patch_dish(menu_id: str, submenu_id: str, dish_id: str, dish: DishCreateModel,
+               background_tasks: BackgroundTasks) -> DishModel | None:
     submenu = submenu_cache.get_submenu(submenu_id)
     if submenu is None:
         submenu = repo_s.get_submenu(submenu_id=submenu_id, menu_id=menu_id)
@@ -169,15 +214,16 @@ def patch_dish(menu_id: str, submenu_id: str, dish_id: str, dish: DishCreateMode
                                       submenu_id=submenu_id, price=dish.price)
     if not updated_dish:
         return None
-    return dish_cache.update_dish(updated_dish)
+    background_tasks.add_task(dish_cache.update_dish, updated_dish)
+    return updated_dish
 
 
-def delete_dish(menu_id: str, submenu_id: str, dish_id: str) -> bool:
+def delete_dish(menu_id: str, submenu_id: str, dish_id: str, background_tasks: BackgroundTasks) -> bool:
     submenu = submenu_cache.get_submenu(submenu_id)
     if submenu is None:
         submenu = repo_s.get_submenu(submenu_id=submenu_id, menu_id=menu_id)
     if not submenu:
         return False
-    dish_cache.delete_dish(menu_id, submenu_id, dish_id)
+    background_tasks.add_task(dish_cache.delete_dish, menu_id, submenu_id, dish_id)
     deleted = repo_d.delete_dish(dish_id=dish_id, submenu_id=submenu_id)
     return deleted
