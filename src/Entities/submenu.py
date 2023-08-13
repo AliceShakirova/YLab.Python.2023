@@ -10,12 +10,12 @@ class Submenu(Base):
     базового класса, + дополнительный столбец menu_id, связывющий таблицу submenu с таблицей menus"""
     __tablename__ = 'submenus'
 
-    menu_id = mapped_column(String, ForeignKey('menus.id'), nullable=False)
-    menu = relationship('Menu', back_populates='submenu', single_parent=True)
-    dish = relationship('Dish', back_populates='submenu', cascade='all, delete-orphan')
+    menu_id = mapped_column(String, ForeignKey('menus.id', ondelete='CASCADE'), nullable=False)
+    menu = relationship('Menu', back_populates='submenu', single_parent=True, innerjoin=True)
+    dish = relationship('Dish', back_populates='submenu', cascade='all, delete-orphan', passive_deletes=True)
 
-    def __init__(self, title: str, description: str, menu_id: str) -> None:
-        Base.__init__(self, title, description)
+    def __init__(self, title: str, description: str, menu_id: str, id: str | None = None) -> None:
+        super().__init__(title, description, id)
         self.menu_id = menu_id
 
 

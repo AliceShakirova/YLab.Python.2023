@@ -1,5 +1,6 @@
 from fastapi import BackgroundTasks
 
+from src.background_worker import celery_app
 from src.Cache.caches import DishCache, MenuCache, SubmenuCache, init_cache
 from src.Db.database import init_db
 from src.Entities.dish import Dish, DishCreateModel, DishModel
@@ -21,6 +22,12 @@ dish_cache = DishCache()
 async def init() -> None:
     await init_db()
     await init_cache()
+    celery_app.add_periodic_task(10, test_task.s(), name='qwerty')
+
+
+@celery_app.task()
+def test_task():
+    print('TEST_TASK')
 
 
 async def get_all_menus_submenus_and_dishes() -> list:

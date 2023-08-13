@@ -1,4 +1,5 @@
-from sqlalchemy import func, select
+from multipledispatch import dispatch
+from sqlalchemy import delete, func, select
 
 from src.Db.database import get_session
 from src.Entities.submenu import Submenu
@@ -15,6 +16,14 @@ class SubmenuRepo:
             return new_submenu
 
     @staticmethod
+    async def create_submenu_from_object(submenu: Submenu) -> Submenu:
+        async with get_session() as db:
+            db.add(submenu)
+            await db.commit()
+            await db.refresh(submenu)
+            return submenu
+
+    @staticmethod
     async def get_all_submenus(self) -> list[type[Submenu]]:
         async with get_session() as db:
             all_submenus = (await db.scalars(select(Submenu))).all()
@@ -27,6 +36,7 @@ class SubmenuRepo:
                                      .where(Submenu.id == submenu_id, Submenu.menu_id == menu_id))).first()
 
     @staticmethod
+    @dispatch(str, str, str, str)
     async def update_submenu(submenu_id: str, title: str, description: str, menu_id: str) -> Submenu | None:
         async with get_session() as db:
             submenu_to_update = (await db.scalars(select(Submenu).where(Submenu.id == submenu_id,
@@ -34,8 +44,20 @@ class SubmenuRepo:
             if submenu_to_update:
                 submenu_to_update.title = title
                 submenu_to_update.description = description
-                db.commit()
-                db.refresh(submenu_to_update)
+                await db.commit()
+                await db.refresh(submenu_to_update)
+            return submenu_to_update
+
+    @staticmethod
+    async def update_submenu_from_object(submenu: Submenu) -> Submenu | None:
+        async with get_session() as db:
+            submenu_to_update = (await db.scalars(select(Submenu).where(Submenu.id == submenu.id,
+                                                                        Submenu.menu_id == submenu.menu_id))).first()
+            if submenu_to_update:
+                submenu_to_update.title = submenu.title
+                submenu_to_update.description = submenu.description
+                await db.commit()
+                await db.refresh(submenu_to_update)
             return submenu_to_update
 
     @staticmethod
@@ -58,3 +80,8 @@ class SubmenuRepo:
     async def get_submenus_count(menu_id: str) -> int:
         async with get_session() as db:
             return await db.scalar(select(func.count(Submenu)).where(menu_id=menu_id))
+
+    @staticmethod
+    async def delete_submenus(submenus: set):
+        async with get_session() as db:
+            await db.execute(delete(Submenu).where(Submenu.id.in_(submenus)))

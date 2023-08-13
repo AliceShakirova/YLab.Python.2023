@@ -10,8 +10,11 @@ class Base(DeclarativeBase):
     title = mapped_column(String, nullable=False)
     description = mapped_column(String)
 
-    def __init__(self, title: str, description: str) -> None:
+    def __init__(self, title: str, description: str, id: str | None = None) -> None:
         super().__init__()
-        self.id = str(uuid.uuid4())
+        if id is None:
+            self.id = str(uuid.uuid4())
+        else:
+            self.id = id
         self.title = title
         self.description = description

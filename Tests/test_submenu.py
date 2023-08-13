@@ -39,7 +39,7 @@ async def test_get_all_submenu(clear_storage, insert_inst):
     response = await client.get(func_reverse('get_list_submenus', menu_id=test_menu.id))
     assert response.status_code == 200
     test_response_payload[0].id = response.json()[0]['id']
-    model: SubmenuModel = SubmenuModel.model_validate(response.json()[0], from_attributes=True)
+    model: SubmenuModel = SubmenuModel.model_validate(response.json()[0], from_attributes=True)  # type: ignore
     assert [model] == test_response_payload
 
 
@@ -50,7 +50,7 @@ async def test_get_target_submenu(clear_storage, insert_inst):
                                              submenu_id=test_response_payload.id))
     assert response.status_code == 200
     test_response_payload.id = response.json()['id']
-    model: SubmenuModel = SubmenuModel.model_validate(response.json(), from_attributes=True)
+    model: SubmenuModel = SubmenuModel.model_validate(response.json(), from_attributes=True)  # type: ignore
     assert model == test_response_payload
 
 

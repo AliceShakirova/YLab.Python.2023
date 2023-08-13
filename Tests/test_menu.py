@@ -46,7 +46,7 @@ async def test_post_menu(clear_storage, insert_inst):
     response = await client.post(func_reverse('post_menu'), json=test_request_payload)
     assert response.status_code == 201
     test_response_payload.id = response.json()['id']
-    model: MenuModel = MenuModel.model_validate(response.json(), from_attributes=True)
+    model: MenuModel = MenuModel.model_validate(response.json(), from_attributes=True)  # type: ignore
     assert model == test_response_payload
 
 

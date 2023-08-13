@@ -15,12 +15,12 @@ class Dish(Base):
     price"""
     __tablename__ = 'dishes'
 
-    submenu_id = mapped_column(String, ForeignKey('submenus.id'), nullable=False)
-    price = mapped_column(DECIMAL(5, 2))
-    submenu = relationship('Submenu', back_populates='dish', single_parent=True)
+    submenu_id = mapped_column(String, ForeignKey('submenus.id', ondelete='CASCADE'), nullable=False)
+    price = mapped_column(DECIMAL(10, 2))
+    submenu = relationship('Submenu', back_populates='dish', single_parent=True, innerjoin=True)
 
-    def __init__(self, title: str, description: str, submenu_id: str, price: Decimal):
-        Base.__init__(self, title, description)
+    def __init__(self, title: str, description: str, submenu_id: str, price: Decimal, id: str | None = None):
+        super().__init__(title, description, id)
         self.submenu_id = submenu_id
         self.price = price
 

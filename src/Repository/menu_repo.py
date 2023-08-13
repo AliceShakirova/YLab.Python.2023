@@ -1,6 +1,8 @@
 from typing import Any
 
-from sqlalchemy import Row, func, select
+from multipledispatch import dispatch
+from sqlalchemy import Row, delete, func, select
+from sqlalchemy.orm import joinedload
 
 from src.Db.database import get_session
 from src.Entities.dish import Dish
@@ -17,6 +19,13 @@ class MenuRepo:
             await db.refresh(new_menu)
             return new_menu
 
+    async def create_menu_from_object(self, menu: Menu) -> Menu:
+        async with get_session() as db:
+            db.add(menu)
+            await db.commit()
+            await db.refresh(menu)
+            return menu
+
     async def get_all_menus(self) -> list[type[Menu]]:
         async with get_session() as db:
             all_menus = (await db.scalars(select(Menu))).all()
@@ -26,12 +35,23 @@ class MenuRepo:
         async with get_session() as db:
             return (await db.scalars(select(Menu).where(Menu.id == menu_id))).first()
 
+    @dispatch(str, str, str)
     async def update_menu(self, menu_id: str, title: str, description: str) -> Menu | None:
         async with get_session() as db:
             menu_to_update = (await db.scalars(select(Menu).where(Menu.id == menu_id))).first()
             if menu_to_update:
                 menu_to_update.title = title
                 menu_to_update.description = description
+                await db.commit()
+                await db.refresh(menu_to_update)
+            return menu_to_update
+
+    async def update_menu_from_object(self, menu: Menu) -> Menu | None:
+        async with get_session() as db:
+            menu_to_update = (await db.scalars(select(Menu).where(Menu.id == menu.id))).first()
+            if menu_to_update:
+                menu_to_update.title = menu.title
+                menu_to_update.description = menu.description
                 await db.commit()
                 await db.refresh(menu_to_update)
             return menu_to_update
@@ -65,3 +85,16 @@ class MenuRepo:
                 .where(Submenu.menu_id == Menu.id)
                 .order_by(Menu.id)
             )).all()
+
+    @staticmethod
+    async def get_full_tree():
+        async with get_session() as db:
+            return (await db.scalars(
+                select(Menu).options(joinedload(Menu.submenu).options(joinedload(Submenu.dish)))
+                .order_by(Menu.id)  # , Submenu.id)
+            )).unique().all()
+
+    @staticmethod
+    async def delete_menus(menus: set):
+        async with get_session() as db:
+            await db.execute(delete(Menu).where(Menu.id.in_(menus)))
