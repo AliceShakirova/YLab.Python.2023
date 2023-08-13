@@ -1,5 +1,5 @@
 import pytest
-from starlette.testclient import TestClient
+from async_asgi_testclient import TestClient
 
 from conftest import func_reverse
 from src.app import app
@@ -11,14 +11,14 @@ dish1_id = None
 dish2_id = None
 
 
+@pytest.mark.asyncio
 @pytest.mark.order(1)
-def test_post_menu(start_clear_storage):
-    start_clear_storage()
+async def test_post_menu(start_clear_storage):
     test_request_payload = {'title': 'My menu 1', 'description': 'My menu description 1'}
     test_response_payload = {'title': 'My menu 1',
                              'description': 'My menu description 1', 'submenus_count': 0, 'dishes_count': 0}
 
-    response = client.post(url=func_reverse('post_menu'), json=test_request_payload)
+    response = await client.post(func_reverse('post_menu'), json=test_request_payload)
     assert response.status_code == 201
     test_response_payload['id'] = response.json()['id']
     global menu_id
@@ -26,12 +26,13 @@ def test_post_menu(start_clear_storage):
     assert response.json() == test_response_payload
 
 
+@pytest.mark.asyncio
 @pytest.mark.order(2)
-def test_post_submenu():
+async def test_post_submenu():
     test_request_payload = {'title': 'My submenu 1', 'description': 'My submenu description 1'}
     test_response_payload = {'id': menu_id, 'title': 'My submenu 1',
                              'description': 'My submenu description 1', 'dishes_count': 0}
-    response = client.post(url=func_reverse('post_submenu', menu_id=menu_id), json=test_request_payload)
+    response = await client.post(func_reverse('post_submenu', menu_id=menu_id), json=test_request_payload)
     assert response.status_code == 201
     test_response_payload['id'] = response.json()['id']
     global submenu_id
@@ -39,12 +40,13 @@ def test_post_submenu():
     assert response.json() == test_response_payload
 
 
+@pytest.mark.asyncio
 @pytest.mark.order(3)
-def test_post_dish_1():
+async def test_post_dish_1():
     test_request_payload = {'title': 'My dish 1', 'description': 'My dish description 1', 'price': '12.50'}
     test_response_payload = {'id': '', 'title': 'My dish 1', 'description': 'My dish description 1', 'price': '12.50'}
-    response = client.post(url=func_reverse('post_dish', menu_id=menu_id, submenu_id=submenu_id),
-                           json=test_request_payload)
+    response = await client.post(func_reverse('post_dish', menu_id=menu_id, submenu_id=submenu_id),
+                                 json=test_request_payload)
     assert response.status_code == 201
     test_response_payload['id'] = response.json()['id']
     global dish1_id
@@ -52,12 +54,13 @@ def test_post_dish_1():
     assert response.json() == test_response_payload
 
 
+@pytest.mark.asyncio
 @pytest.mark.order(4)
-def test_post_dish_2():
+async def test_post_dish_2():
     test_request_payload = {'title': 'My dish 1', 'description': 'My dish description 1', 'price': '12.50'}
     test_response_payload = {'id': '', 'title': 'My dish 1', 'description': 'My dish description 1', 'price': '12.50'}
-    response = client.post(url=func_reverse('post_dish', menu_id=menu_id, submenu_id=submenu_id),
-                           json=test_request_payload)
+    response = await client.post(func_reverse('post_dish', menu_id=menu_id, submenu_id=submenu_id),
+                                 json=test_request_payload)
     assert response.status_code == 201
     test_response_payload['id'] = response.json()['id']
     global dish2_id
@@ -65,68 +68,76 @@ def test_post_dish_2():
     assert response.json() == test_response_payload
 
 
+@pytest.mark.asyncio
 @pytest.mark.order(5)
-def test_get_target_menu_1():
+async def test_get_target_menu_1():
     test_response_payload = {'id': menu_id, 'title': 'My menu 1', 'description': 'My menu description 1',
                              'submenus_count': 1, 'dishes_count': 2}
-    response = client.get(url=func_reverse('get_target_menu', menu_id=menu_id))
+    response = await client.get(func_reverse('get_target_menu', menu_id=menu_id))
     assert response.status_code == 200
     assert response.json() == test_response_payload
 
 
+@pytest.mark.asyncio
 @pytest.mark.order(6)
-def test_get_target_submenu():
+async def test_get_target_submenu():
     test_response_payload = {'id': submenu_id, 'title': 'My submenu 1',
                              'description': 'My submenu description 1', 'dishes_count': 2}
-    response = client.get(url=func_reverse('get_target_submenu', menu_id=menu_id, submenu_id=submenu_id))
+    response = await client.get(func_reverse('get_target_submenu', menu_id=menu_id, submenu_id=submenu_id))
     assert response.status_code == 200
     assert response.json() == test_response_payload
 
 
+@pytest.mark.asyncio
 @pytest.mark.order(7)
-def test_delete_submenu():
+async def test_delete_submenu():
     test_response_payload = {'status': True, 'message': 'The submenu has been deleted'}
-    response = client.delete(url=func_reverse('delete_submenu', menu_id=menu_id, submenu_id=submenu_id))
+    response = await client.delete(func_reverse('delete_submenu', menu_id=menu_id, submenu_id=submenu_id))
     assert response.status_code == 200
     assert response.json() == test_response_payload
 
 
+@pytest.mark.asyncio
 @pytest.mark.order(8)
-def test_get_all_submenu_empty():
+async def test_get_all_submenu_empty():
     test_response_payload = []
-    response = client.get(url=func_reverse('get_list_submenus', menu_id=menu_id))
+    response = await client.get(func_reverse('get_list_submenus', menu_id=menu_id))
     assert response.status_code == 200
     assert response.json() == test_response_payload
 
 
+@pytest.mark.asyncio
 @pytest.mark.order(9)
-def test_get_all_dish_empty():
+async def test_get_all_dish_empty():
     test_response_payload = []
-    response = client.get(url=func_reverse('get_list_dishes', menu_id=menu_id, submenu_id=submenu_id))
+    response = await client.get(func_reverse('get_list_dishes', menu_id=menu_id, submenu_id=submenu_id))
     assert response.status_code == 200
     assert response.json() == test_response_payload
 
 
+@pytest.mark.asyncio
 @pytest.mark.order(10)
-def test_get_target_menu_2():
+async def test_get_target_menu_2():
     test_response_payload = {'id': menu_id, 'title': 'My menu 1', 'description': 'My menu description 1',
                              'submenus_count': 0, 'dishes_count': 0}
-    response = client.get(url=func_reverse('get_target_menu', menu_id=menu_id))
+    response = await client.get(func_reverse('get_target_menu', menu_id=menu_id))
     assert response.status_code == 200
     assert response.json() == test_response_payload
 
 
+@pytest.mark.asyncio
 @pytest.mark.order(11)
-def test_delete_menu():
+async def test_delete_menu():
     test_response_payload = {'status': True, 'message': 'The menu has been deleted'}
-    response = client.delete(url=func_reverse('delete_menu', menu_id=menu_id))
+    response = await client.delete(func_reverse('delete_menu', menu_id=menu_id))
     assert response.status_code == 200
     assert response.json() == test_response_payload
 
 
+@pytest.mark.asyncio
 @pytest.mark.order(12)
-def test_get_all_menu_empty():
+async def test_get_all_menu_empty():
     test_response_payload = []
-    response = client.get(url=func_reverse('get_list_menus'))
+    response = await client.get(func_reverse('get_list_menus'))
     assert response.status_code == 200
     assert response.json() == test_response_payload

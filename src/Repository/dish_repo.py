@@ -1,59 +1,62 @@
 from _decimal import Decimal
-from sqlalchemy import Engine
-from sqlalchemy.orm import Session
+from sqlalchemy import func, select
 
+from src.Db.database import get_session
 from src.Entities.dish import Dish
 
 
 class DishRepo:
-
-    def __init__(self, engine: Engine) -> None:
-        self.engine = engine
-
-    def create_dish(self, title: str, description: str, price: Decimal, submenu_id: str) -> Dish:
-        with Session(autoflush=False, bind=self.engine) as db:
+    @staticmethod
+    async def create_dish(title: str, description: str, price: Decimal, submenu_id: str) -> Dish:
+        async with get_session() as db:
             new_dish = Dish(title=title, description=description, price=price, submenu_id=submenu_id)
             db.add(new_dish)
-            db.commit()
-            db.refresh(new_dish)
+            await db.commit()
+            await db.refresh(new_dish)
             return new_dish
 
-    def get_dishes_of_submenu(self, submenu_id: str) -> list[type[Dish]]:
-        with Session(autoflush=False, bind=self.engine) as db:
-            dishes_of_submenu = db.query(Dish).filter_by(submenu_id=submenu_id).all()
+    @staticmethod
+    async def get_dishes_of_submenu(submenu_id: str) -> list[type[Dish]]:
+        async with get_session() as db:
+            dishes_of_submenu = (await db.scalars(select(Dish).where(Dish.submenu_id == submenu_id))).all()
             return dishes_of_submenu
 
-    def get_dishes_count(self, submenu_id: str) -> int:
-        with Session(autoflush=False, bind=self.engine) as db:
-            count_of_dishes_of_submenu = db.query(Dish).filter_by(submenu_id=submenu_id).count()
-            return count_of_dishes_of_submenu
+    @staticmethod
+    async def get_dishes_count(submenu_id: str) -> int:
+        async with get_session() as db:
+            return (await db.scalars(select(func.count(Dish.id)).where(Dish.submenu_id == submenu_id))).one()
 
-    def get_dish(self, dish_id: str, submenu_id: str) -> Dish | None:
-        with Session(autoflush=False, bind=self.engine) as db:
-            dish = db.query(Dish).filter_by(id=str(dish_id), submenu_id=submenu_id).first()
-            return dish
+    @staticmethod
+    async def get_dish(dish_id: str, submenu_id: str) -> Dish | None:
+        async with get_session() as db:
+            dish = await db.scalars(select(Dish).where(Dish.id == dish_id, Dish.submenu_id == submenu_id))
+            return dish.first()
 
-    def update_dish(self, dish_id: str, title: str, description: str, price: str,
-                    submenu_id: str) -> Dish | None:
-        with Session(autoflush=False, bind=self.engine) as db:
-            dish_to_update = db.query(Dish).filter_by(id=str(dish_id), submenu_id=submenu_id).first()
+    @staticmethod
+    async def update_dish(dish_id: str, title: str, description: str, price: str,
+                          submenu_id: str) -> Dish | None:
+        async with get_session() as db:
+            dish_to_update = (await db.scalars(select(Dish).where(Dish.id == dish_id,
+                                                                  Dish.submenu_id == submenu_id))).first()
             if dish_to_update is not None:
                 dish_to_update.title = title
                 dish_to_update.description = description
                 dish_to_update.price = price
-                db.commit()
-                db.refresh(dish_to_update)
+                await db.commit()
+                await db.refresh(dish_to_update)
             return dish_to_update
 
-    def delete_dish(self, dish_id: str, submenu_id: str) -> bool:
-        with Session(autoflush=False, bind=self.engine) as db:
-            dish_to_delete = db.query(Dish).filter_by(id=str(dish_id), submenu_id=submenu_id).first()
+    @staticmethod
+    async def delete_dish(dish_id: str, submenu_id: str) -> bool:
+        async with get_session() as db:
+            dish_to_delete = (await db.scalars(select(Dish).filter_by(id=str(dish_id), submenu_id=submenu_id))).first()
             if not dish_to_delete:
                 return False
             db.delete(dish_to_delete)
             db.commit()
             return True
 
-    def get_dishes_of_submenus(self, ids: list) -> list[type[Dish]]:
-        with Session(autoflush=False, bind=self.engine) as db:
-            return db.query(Dish).filter(Dish.submenu_id.in_(ids)).all()
+    @staticmethod
+    async def get_dishes_of_submenus(ids: list) -> list[type[Dish]]:
+        async with get_session() as db:
+            return (await db.scalars(select(Dish).filter(Dish.submenu_id.in_(ids)))).all()

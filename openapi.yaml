@@ -21,7 +21,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/get_menu/id'
-        default:
+        async default:
           description: Unexpected error
           content:
             application/json:
@@ -45,7 +45,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/get_menu'
-        default:
+        async default:
           description: Unexpected error
           content:
             application/json:
@@ -74,7 +74,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/menu_not_found'
-        default:
+        async default:
           description: Unexpected error
           content:
             application/json:
@@ -108,7 +108,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/menu_not_found'
-        default:
+        async default:
           description: Unexpected error
           content:
             application/json:
@@ -147,7 +147,7 @@ paths:
                       message:
                         type: string
                         example: "Menu not found"
-        default:
+        async default:
           description: Unexpected error
           content:
             application/json:
@@ -172,7 +172,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/get_submenu'
-        default:
+        async default:
           description: Unexpected error
           content:
             application/json:
@@ -199,7 +199,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/get_submenu'
-        default:
+        async default:
           description: Unexpected error
           content:
             application/json:
@@ -228,7 +228,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/submenu_not_found'
-        default:
+        async default:
           description: Unexpected error
           content:
             application/json:
@@ -262,7 +262,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/submenu_not_found'
-        default:
+        async default:
           description: Unexpected error
           content:
             application/json:
@@ -302,7 +302,7 @@ paths:
                       message:
                         type: string
                         example: "Submenu not found"
-        default:
+        async default:
           description: Unexpected error
           content:
             application/json:
@@ -325,7 +325,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/get_dish'
-        default:
+        async default:
           description: Unexpected error
           content:
             application/json:
@@ -353,7 +353,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/get_dish'
-        default:
+        async default:
           description: Unexpected error
           content:
             application/json:
@@ -383,7 +383,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/dish_not_found'
-        default:
+        async default:
           description: Unexpected error
           content:
             application/json:
@@ -418,7 +418,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/dish_not_found'
-        default:
+        async default:
           description: Unexpected error
           content:
             application/json:
@@ -461,7 +461,7 @@ paths:
                   message:
                     type: string
                     example: "Dish not found"
-        default:
+        async default:
           description: Unexpected error
           content:
             application/json:

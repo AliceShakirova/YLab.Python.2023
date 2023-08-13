@@ -11,6 +11,7 @@ class Base(DeclarativeBase):
     description = mapped_column(String)
 
     def __init__(self, title: str, description: str) -> None:
+        super().__init__()
         self.id = str(uuid.uuid4())
         self.title = title
         self.description = description
