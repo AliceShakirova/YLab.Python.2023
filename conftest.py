@@ -1,5 +1,5 @@
 import asyncio
-from typing import AsyncGenerator
+from typing import Generator
 
 import pytest
 from _pydecimal import Decimal
@@ -28,12 +28,12 @@ def event_loop():
 
 @pytest.fixture(scope='session', autouse=True)
 async def init():
-    init_db()
-    init_cache()
+    await init_db()
+    await init_cache()
 
 
 @pytest.fixture
-async def clear_storage() -> AsyncGenerator | None:
+def clear_storage() -> Generator | None:
     async def clear_storage_func():
         async with get_session() as session:
             await session.execute(text(f'TRUNCATE {Menu.__tablename__} CASCADE'))
@@ -42,7 +42,8 @@ async def clear_storage() -> AsyncGenerator | None:
             await redis.flushdb()
 
     yield clear_storage_func
-    await clear_storage_func()
+    loop = asyncio.new_event_loop()
+    loop.run_until_complete(clear_storage_func())
 
 
 @pytest.fixture()

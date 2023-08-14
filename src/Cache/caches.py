@@ -10,19 +10,20 @@ from src.Entities.dish import Dish, DishModel
 from src.Entities.menu import Menu, MenuModel
 from src.Entities.submenu import Submenu, SubmenuModel
 
+conn_str = getenv('REDIS_OM_URL')
+
 
 async def init_cache():
-    conn_str = getenv('REDIS_OM_URL')
-    if conn_str is not None:
-        redis_cache = redis.from_url(conn_str, decode_responses=True)
-    else:
+    if conn_str is None:
         redis_cache = redis.Redis(host='localhost', port=6379, decode_responses=True)
+    else:
+        redis_cache = redis.from_url(conn_str, decode_responses=True)
     await redis_cache.close(close_connection_pool=False)
 
 
 @asynccontextmanager
 async def get_redis():
-    async with redis.Redis(decode_responses=True) as redis_conn:
+    async with redis.from_url(conn_str, decode_responses=True) as redis_conn:
         try:
             yield redis_conn
         finally:
@@ -262,7 +263,7 @@ class DishCache:
     @classmethod
     async def delete_dish(cls, menu_id: str, submenu_id: str, dish_id: str):
         async with get_redis() as redis:
-            if redis.get(dish_id) is not None:
+            if await redis.get(dish_id) is not None:
                 await redis.delete(dish_id)
                 await cls.update_dishes_count(menu_id, submenu_id, -1)
         dish_ids = await DishCache.get_dish_ids(submenu_id)

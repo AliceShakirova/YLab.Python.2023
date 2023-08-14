@@ -5,7 +5,7 @@
 # https://docs.docker.com/engine/reference/builder/
 
 
-ARG PYTHON_VERSION=3.11.1
+ARG PYTHON_VERSION=3.11.4
 FROM python:${PYTHON_VERSION}-slim-bullseye as base
 
 # Prevents Python from writing pyc files.
@@ -56,4 +56,4 @@ USER appuser
 EXPOSE 8000
 
 # Run the application.
-ENTRYPOINT ["python", "-m", "pytest", "-v", "--ff", "--tb=no", "-l"]
+ENTRYPOINT ["python", "-m", "pytest", "-v", "--ff", "--tb=no", "-l", "--asyncio-mode=auto"]
