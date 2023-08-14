@@ -262,7 +262,7 @@ class DishCache:
     @classmethod
     async def delete_dish(cls, menu_id: str, submenu_id: str, dish_id: str):
         async with get_redis() as redis:
-            if redis.get(dish_id) is not None:
+            if await redis.get(dish_id) is not None:
                 await redis.delete(dish_id)
                 await cls.update_dishes_count(menu_id, submenu_id, -1)
         dish_ids = await DishCache.get_dish_ids(submenu_id)

@@ -73,8 +73,8 @@ class DishRepo:
             dish_to_delete = (await db.scalars(select(Dish).filter_by(id=str(dish_id), submenu_id=submenu_id))).first()
             if not dish_to_delete:
                 return False
-            db.delete(dish_to_delete)
-            db.commit()
+            await db.delete(dish_to_delete)
+            await db.commit()
             return True
 
     @staticmethod

@@ -50,7 +50,7 @@ services:
     image:
       rabbitmq:latest
     ports:
-      - 5672:5672
+      - 5671:5671
 
 # The commented out section below is an example of how to async define a PostgreSQL
 # database that your application can use. `depends_on` tells Docker Compose to

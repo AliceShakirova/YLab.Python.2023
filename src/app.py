@@ -1,4 +1,5 @@
 from fastapi import BackgroundTasks, FastAPI
+from fastapi.encoders import jsonable_encoder
 from starlette.responses import JSONResponse
 
 from src import service
@@ -23,7 +24,8 @@ async def init():
 
 @app.get('/api/v1/menus/all', response_model=list)
 async def get_all_menus_submenus_and_dishes() -> list:
-    return await service.get_all_menus_submenus_and_dishes()
+    result_tree = await service.get_full_tree()
+    return jsonable_encoder(result_tree)
 
 
 @app.get('/api/v1/menus', response_model=MenuListModel)

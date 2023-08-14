@@ -1,5 +1,7 @@
+from celery.schedules import crontab
 from fastapi import BackgroundTasks
 
+from src.Background.sync_task import sync_task
 from src.Cache.caches import DishCache, MenuCache, SubmenuCache, init_cache
 from src.celery_worker import celery_app
 from src.Db.database import init_db
@@ -22,57 +24,11 @@ dish_cache = DishCache()
 async def init() -> None:
     await init_db()
     await init_cache()
-    celery_app.add_periodic_task(test_task.s(), name='sync_task', minutes=15)
+    celery_app.add_periodic_task(sig=sync_task.s(), name='sync_task', schedule=crontab(minute=15))
 
 
-@celery_app.task()
-def test_task():
-    print('TEST_TASK')
-
-
-async def get_all_menus_submenus_and_dishes() -> list:
-    all_inst_raw = await menu_repo.get_all_menus_submenus_and_dishes()
-    if all_inst_raw is None:
-        return []
-    else:
-        all_inst = parse_all_inst(all_inst_raw)
-        all_inst_ready = []
-        for elem in all_inst:
-            if type(elem) is Menu:
-                all_inst_ready.append(MenuModel.model_validate(elem, from_attributes=True))
-            elif type(elem) is Submenu:
-                all_inst_ready.append(SubmenuModel.model_validate(elem, from_attributes=True))
-            elif type(elem) is Dish:
-                all_inst_ready.append(DishModel.model_validate(elem, from_attributes=True))
-    return list(all_inst_ready)
-
-
-def parse_all_inst(all_inst_raw: list) -> list:
-    all_inst_raw = all_inst_raw
-    all_inst = []
-    last_menu = MenuModel
-    last_submenu = SubmenuModel
-    submenus_count, dishes_count = 0, 0
-    for elem in all_inst_raw[0]:
-        if type(elem) is Menu:
-            if elem == last_menu:
-                continue
-            elem.submenus_count = submenus_count
-            elem.dishes_count = dishes_count
-            all_inst.append(elem)
-            last_menu = elem
-        elif type(elem) is Submenu:
-            if elem.id == last_submenu:
-                continue
-            elem.dishes_count = dishes_count
-            all_inst.append(elem)
-            last_submenu = elem
-            last_menu.submenus_count += 1
-        elif type(elem) is Dish:
-            all_inst.append(elem)
-            last_menu.dishes_count += 1
-            last_submenu.dishes_count += 1
-    return all_inst
+async def get_full_tree() -> list:
+    return await menu_repo.get_full_tree()
 
 
 async def get_all_menus() -> list[type[Menu]] | list[MenuModel]:

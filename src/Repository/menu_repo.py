@@ -1,6 +1,5 @@
 from typing import Any
 
-from multipledispatch import dispatch
 from sqlalchemy import Row, delete, func, select
 from sqlalchemy.orm import joinedload
 
@@ -35,7 +34,6 @@ class MenuRepo:
         async with get_session() as db:
             return (await db.scalars(select(Menu).where(Menu.id == menu_id))).first()
 
-    @dispatch(str, str, str)
     async def update_menu(self, menu_id: str, title: str, description: str) -> Menu | None:
         async with get_session() as db:
             menu_to_update = (await db.scalars(select(Menu).where(Menu.id == menu_id))).first()

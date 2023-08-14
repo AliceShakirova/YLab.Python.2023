@@ -28,8 +28,8 @@ def event_loop():
 
 @pytest.fixture(scope='session', autouse=True)
 async def init():
-    init_db()
-    init_cache()
+    await init_db()
+    await init_cache()
 
 
 @pytest.fixture

@@ -5,38 +5,44 @@ import conftest
 from conftest import func_reverse
 from src.app import app
 from src.Entities.menu import Menu, MenuModel
-
-# from src.Entities.submenu import Submenu
+from src.Entities.submenu import Submenu
 
 client = TestClient(app)
 
 
-"""
 @pytest.mark.asyncio
 async def test_get_all_inst(clear_storage, insert_inst):
     test_response_payload = [{'id': '', 'title': 'My menu 1', 'description': 'My menu description 1',
-                              'submenus_count': 1, 'dishes_count': 1},
-                             {'id': '', 'title': 'My submenu 1', 'description': 'My submenu description 1',
-                              'dishes_count': 1},
-                             {'id': '', 'title': 'My dish 1', 'description': 'My dish description 1', 'price': '12.50'}]
-    test_menu, test_submenu = await insert_inst(Submenu, storage=conftest.ADD_TO_CACHE)
+                              'submenu': [{'id': '', 'title': 'My submenu 1', 'description': 'My submenu description 1',
+                                           'menu_id': '', 'dish': [{'id': '', 'title': 'My dish 1',
+                                                                    'description': 'My dish description 1',
+                                                                    'price': 12.5}]}]}]
+    test_menu_model, test_submenu_model = await insert_inst(Submenu, storage=conftest.ADD_TO_CACHE)
     test_dish_request_payload = {'title': 'My dish 1', 'description': 'My dish description 1', 'price': '12.50'}
-    test_dish = await client.post(func_reverse('post_dish', menu_id=test_menu.id,
-                                             submenu_id=test_submenu.id), json=test_dish_request_payload)
+    test_menu = {'title': test_menu_model.title, 'description': test_menu_model.description, 'id': test_menu_model.id}
+    test_submenu = [{'id': test_submenu_model.id, 'title': test_submenu_model.title,
+                    'description': test_submenu_model.description, 'menu_id': test_menu_model.id,
+                     'dish': [{'id': '', 'title': 'My dish 1', 'description': 'My dish description 1',
+                              'price': 12.5, 'submenu_id': test_submenu_model.id}]}]
+    test_response_payload[0]['submenu'] = test_submenu
+    test_dish = await client.post(func_reverse('post_dish', menu_id=test_menu['id'],
+                                               submenu_id=test_submenu[0]['id']), json=test_dish_request_payload)
+    test_response_payload[0]['submenu'][0]['dish'][0]['id'] = test_dish.json()['id']
+    test_response_payload[0]['submenu'][0]['dish'][0]['submenu_id'] = test_submenu[0]['id']
     response = await client.get(func_reverse('get_all_menus_submenus_and_dishes'))
     assert response.status_code == 200
-    test_response_payload[0]['id'] = test_menu.id
-    test_response_payload[1]['id'] = test_submenu.id
-    test_response_payload[2]['id'] = test_dish.json()['id']
-    assert response.json() == test_response_payload"""
+    test_response_payload[0]['id'] = test_menu['id']
+    test_response_payload[0]['submenu'][0]['id'] = test_submenu[0]['id']
+    test_response_payload[0]['submenu'][0]['dish'][0]['id'] = test_dish.json()['id']
+    assert response.json() == test_response_payload
 
-"""
+
 @pytest.mark.asyncio
 async def test_get_all_menu_empty_storage(clear_storage):
     test_response_payload = []
     response = await client.get(func_reverse('get_list_menus'))
     assert response.status_code == 200
-    assert response.json() == test_response_payload"""
+    assert response.json() == test_response_payload
 
 
 @pytest.mark.asyncio

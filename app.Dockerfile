@@ -50,5 +50,5 @@ COPY ./src ./src
 EXPOSE 8000
 
 # Run the application.
-CMD ["celery", "-A", "src.celery_worker", "worker"]
-ENTRYPOINT ["uvicorn", "src.main:app", "--reload", "--host", "0.0.0.0"]
+CMD ["celery", "-A", "src.celery_worker", "worker", "-D"]
+CMD ["uvicorn", "src.main:app", "--reload", "--host", "0.0.0.0"]
