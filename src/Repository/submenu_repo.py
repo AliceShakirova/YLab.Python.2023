@@ -1,4 +1,3 @@
-from multipledispatch import dispatch
 from sqlalchemy import delete, func, select
 
 from src.Db.database import get_session
@@ -36,7 +35,6 @@ class SubmenuRepo:
                                      .where(Submenu.id == submenu_id, Submenu.menu_id == menu_id))).first()
 
     @staticmethod
-    @dispatch(str, str, str, str)
     async def update_submenu(submenu_id: str, title: str, description: str, menu_id: str) -> Submenu | None:
         async with get_session() as db:
             submenu_to_update = (await db.scalars(select(Submenu).where(Submenu.id == submenu_id,

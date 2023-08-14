@@ -1,5 +1,7 @@
+from celery.schedules import crontab
 from fastapi import BackgroundTasks
 
+from src.Background.sync_task import sync_task
 from src.Cache.caches import DishCache, MenuCache, SubmenuCache, init_cache
 from src.celery_worker import celery_app
 from src.Db.database import init_db
@@ -22,12 +24,7 @@ dish_cache = DishCache()
 async def init() -> None:
     await init_db()
     await init_cache()
-    celery_app.add_periodic_task(test_task.s(), name='sync_task', minutes=15)
-
-
-@celery_app.task()
-def test_task():
-    print('TEST_TASK')
+    celery_app.add_periodic_task(sig=sync_task.s(), name='sync_task', schedule=crontab(minute=15))
 
 
 async def get_all_menus_submenus_and_dishes() -> list:
