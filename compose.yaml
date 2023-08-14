@@ -21,6 +21,8 @@ services:
         condition: service_healthy
       redis-cache:
         condition: service_healthy
+      rabbitmq:
+        condition: service_started
   db:
     image: postgres:13-bullseye
     restart: always
@@ -44,6 +46,11 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+  rabbitmq:
+    image:
+      rabbitmq:latest
+    ports:
+      - 5672:5672
 
 # The commented out section below is an example of how to async define a PostgreSQL
 # database that your application can use. `depends_on` tells Docker Compose to

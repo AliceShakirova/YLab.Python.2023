@@ -6,6 +6,7 @@ from openpyxl import load_workbook
 from openpyxl.cell import Cell
 from openpyxl.workbook import Workbook
 
+from src.celery_worker import celery_app
 from src.Db.database import init_db
 from src.Entities.dish import Dish
 from src.Entities.menu import Menu
@@ -22,7 +23,8 @@ submenu_repo: SubmenuRepo = sr.SubmenuRepo()
 dish_repo: DishRepo = dr.DishRepo()
 
 
-async def main():
+@celery_app.task()
+async def sync_task():
     await init_db()
     wb: openpyxl.Workbook = load_workbook(filename='../../admin/Menu.xlsx')  # type: ignore
     data = await menu_repo.get_full_tree()
@@ -133,5 +135,6 @@ def process_dish(row: tuple[Cell, ...], submenu_id: str):
     return Dish(dish_title, dish_description, submenu_id, dish_price, dish_id)
 
 
-loop = asyncio.new_event_loop()
-loop.run_until_complete(main())
+if __name__ == '__main__':
+    loop = asyncio.new_event_loop()
+    loop.run_until_complete(sync_task())

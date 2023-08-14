@@ -1,7 +1,7 @@
 from fastapi import BackgroundTasks
 
-from src.background_worker import celery_app
 from src.Cache.caches import DishCache, MenuCache, SubmenuCache, init_cache
+from src.celery_worker import celery_app
 from src.Db.database import init_db
 from src.Entities.dish import Dish, DishCreateModel, DishModel
 from src.Entities.menu import Menu, MenuCreateModel, MenuModel
@@ -22,7 +22,7 @@ dish_cache = DishCache()
 async def init() -> None:
     await init_db()
     await init_cache()
-    celery_app.add_periodic_task(10, test_task.s(), name='qwerty')
+    celery_app.add_periodic_task(test_task.s(), name='sync_task', minutes=15)
 
 
 @celery_app.task()
