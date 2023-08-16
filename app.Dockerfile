@@ -45,7 +45,8 @@ COPY ./src ./src
 COPY ./admin ./admin
 COPY ./run.sh ./run.sh
 
-RUN chown appuser:appuser ./
+RUN chown appuser:appuser ./ &&\
+    chmod a+x ./run.sh
 
 # Switch to the non-privileged user to run the application.
 USER appuser
@@ -53,7 +54,6 @@ USER appuser
 # Expose the port that the application listens on.
 EXPOSE 8000
 
+CMD ls
 # Run the application.
-#CMD ["celery", "-A", "src.celery_worker", "worker", "-D", "-B"]
-#ENTRYPOINT ["uvicorn", "src.main:app", "--reload", "--host", "0.0.0.0"]
-ENTRYPOINT ["uvicorn", "src.main:app", "--reload", "--host", "0.0.0.0"]
+ENTRYPOINT ["./run.sh"]
