@@ -9,7 +9,8 @@ class Menu(Base):
     класса"""
     __tablename__ = 'menus'
 
-    submenu = relationship('Submenu', back_populates='menu', cascade='all, delete-orphan', passive_deletes=True)
+    submenus = relationship('Submenu', back_populates='menu', cascade='all, delete-orphan',
+                            passive_deletes=True, lazy='joined')
 
     def __init__(self, title: str, description: str, id: str | None = None):
         super().__init__(title, description, id)

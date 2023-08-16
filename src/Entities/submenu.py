@@ -11,8 +11,9 @@ class Submenu(Base):
     __tablename__ = 'submenus'
 
     menu_id = mapped_column(String, ForeignKey('menus.id', ondelete='CASCADE'), nullable=False)
-    menu = relationship('Menu', back_populates='submenu', single_parent=True, innerjoin=True)
-    dish = relationship('Dish', back_populates='submenu', cascade='all, delete-orphan', passive_deletes=True)
+    menu = relationship('Menu', back_populates='submenus', single_parent=True, innerjoin=True)
+    dishes = relationship('Dish', back_populates='submenu', cascade='all, delete-orphan',
+                          passive_deletes=True, lazy='joined')
 
     def __init__(self, title: str, description: str, menu_id: str, id: str | None = None) -> None:
         super().__init__(title, description, id)

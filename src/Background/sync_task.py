@@ -40,10 +40,10 @@ def process_item(item: Menu | Submenu | Dish, tree: dict):
     tree[item.id] = item
     if type(item) is Menu:
         item.submenu_tree = {}
-        list(map(lambda submenu: process_item(submenu, item.submenu_tree), item.submenu))
+        list(map(lambda submenu: process_item(submenu, item.submenu_tree), item.submenus))
     elif type(item) is Submenu:
         item.dish_tree = {}
-        list(map(lambda dish: process_item(dish, item.dish_tree), item.dish))
+        list(map(lambda dish: process_item(dish, item.dish_tree), item.dishes))
 
 
 async def process_menus(wb: Workbook, db_data: dict[str, Menu]):

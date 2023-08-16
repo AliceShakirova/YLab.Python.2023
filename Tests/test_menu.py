@@ -1,9 +1,12 @@
 import pytest
+from _decimal import Decimal
 from async_asgi_testclient import TestClient
+from fastapi.encoders import jsonable_encoder
 
 import conftest
 from conftest import func_reverse
 from src.app import app
+from src.Entities.dish import Dish
 from src.Entities.menu import Menu, MenuModel
 from src.Entities.submenu import Submenu
 
@@ -11,30 +14,26 @@ client = TestClient(app)
 
 
 @pytest.mark.asyncio
-async def test_get_all_inst(clear_storage, insert_inst):
-    test_response_payload = [{'id': '', 'title': 'My menu 1', 'description': 'My menu description 1',
-                              'submenu': [{'id': '', 'title': 'My submenu 1', 'description': 'My submenu description 1',
-                                           'menu_id': '', 'dish': [{'id': '', 'title': 'My dish 1',
-                                                                    'description': 'My dish description 1',
-                                                                    'price': 12.5}]}]}]
-    test_menu_model, test_submenu_model = await insert_inst(Submenu, storage=conftest.ADD_TO_CACHE)
-    test_dish_request_payload = {'title': 'My dish 1', 'description': 'My dish description 1', 'price': '12.50'}
-    test_menu = {'title': test_menu_model.title, 'description': test_menu_model.description, 'id': test_menu_model.id}
-    test_submenu = [{'id': test_submenu_model.id, 'title': test_submenu_model.title,
-                    'description': test_submenu_model.description, 'menu_id': test_menu_model.id,
-                     'dish': [{'id': '', 'title': 'My dish 1', 'description': 'My dish description 1',
-                              'price': 12.5, 'submenu_id': test_submenu_model.id}]}]
-    test_response_payload[0]['submenu'] = test_submenu
-    test_dish = await client.post(func_reverse('post_dish', menu_id=test_menu['id'],
-                                               submenu_id=test_submenu[0]['id']), json=test_dish_request_payload)
-    test_response_payload[0]['submenu'][0]['dish'][0]['id'] = test_dish.json()['id']
-    test_response_payload[0]['submenu'][0]['dish'][0]['submenu_id'] = test_submenu[0]['id']
+async def test_get_all_inst(clear_storage, insert_full_menu):
+    menu_1: Menu = Menu(id='a2eb416c-2245-4526-bb4b-6343d5c5016f', title='My menu 1',
+                        description='My menu description 1')
+    submenu_1: Submenu = Submenu(id='bc19488a-cc0e-4eaa-8d21-4d486a45392f', title='My submenu 1',
+                                 description='My submenu description 1', menu_id=menu_1.id)
+    submenu_2: Submenu = Submenu(id='602033b3-0462-4de1-a2f8-d8494795e0c0', title='My submenu 2',
+                                 description='My submenu description 2', menu_id=menu_1.id)
+    dish_1: Dish = Dish(id='bc19488a-cc0e-4eaa-8d21-4d486a45392f', title='My dish 1',
+                        description='My dish description 1', submenu_id=submenu_1.id, price=Decimal(12.5))
+    dish_2: Dish = Dish(id='ded236d9-e931-496f-902b-91fbaf9f5d65', title='My dish 2',
+                        description='My dish description 2', submenu_id=submenu_1.id, price=Decimal(15.5))
+    dish_3: Dish = Dish(id='c6dbcd4b-10a4-41d7-8b26-20e08c7cfe9a', title='My dish 3',
+                        description='My dish description 3', submenu_id=submenu_2.id, price=Decimal(13.55))
+    menu_1.submenus.extend([submenu_1, submenu_2])
+    submenu_1.dishes.extend([dish_1, dish_2])
+    submenu_2.dishes.append(dish_3)
+    await insert_full_menu(menu_1)
     response = await client.get(func_reverse('get_all_menus_submenus_and_dishes'))
     assert response.status_code == 200
-    test_response_payload[0]['id'] = test_menu['id']
-    test_response_payload[0]['submenu'][0]['id'] = test_submenu[0]['id']
-    test_response_payload[0]['submenu'][0]['dish'][0]['id'] = test_dish.json()['id']
-    assert response.json() == test_response_payload
+    assert response.json() == jsonable_encoder([menu_1])
 
 
 @pytest.mark.asyncio

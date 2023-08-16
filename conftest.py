@@ -105,6 +105,19 @@ async def insert_dish_cache(dish_id: str, title: str, description: str, price: D
 
 
 @pytest.fixture
+def insert_full_menu():
+    async def insert_full_menu_func(menu: Menu) -> Menu:
+        async with get_session() as session:
+            menu = menu
+            session.add(menu)
+            await session.commit()
+            await session.refresh(menu)
+            return menu
+
+    yield insert_full_menu_func
+
+
+@pytest.fixture
 def insert_inst():
     async def insert_inst_func(inst: Menu | Submenu | Dish, storage: int):
         if inst is Menu:

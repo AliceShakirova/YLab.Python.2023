@@ -17,7 +17,7 @@ class Dish(Base):
 
     submenu_id = mapped_column(String, ForeignKey('submenus.id', ondelete='CASCADE'), nullable=False)
     price = mapped_column(DECIMAL(10, 2))
-    submenu = relationship('Submenu', back_populates='dish', single_parent=True, innerjoin=True)
+    submenu = relationship('Submenu', back_populates='dishes', single_parent=True, innerjoin=True)
 
     def __init__(self, title: str, description: str, submenu_id: str, price: Decimal, id: str | None = None):
         super().__init__(title, description, id)

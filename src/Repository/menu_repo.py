@@ -27,7 +27,7 @@ class MenuRepo:
 
     async def get_all_menus(self) -> list[type[Menu]]:
         async with get_session() as db:
-            all_menus = (await db.scalars(select(Menu))).all()
+            all_menus = (await db.scalars(select(Menu))).unique().all()
             return all_menus
 
     async def get_menu(self, menu_id: str) -> Menu | None:
@@ -88,7 +88,7 @@ class MenuRepo:
     async def get_full_tree():
         async with get_session() as db:
             return (await db.scalars(
-                select(Menu).options(joinedload(Menu.submenu).options(joinedload(Submenu.dish)))
+                select(Menu).options(joinedload(Menu.submenus).options(joinedload(Submenu.dishes)))
                 .order_by(Menu.id)  # , Submenu.id)
             )).unique().all()
 

@@ -72,7 +72,7 @@ class SubmenuRepo:
     @staticmethod
     async def get_submenus_of_menu(menu_id: str) -> list[Submenu]:
         async with get_session() as db:
-            return (await db.scalars(select(Submenu).where(Submenu.menu_id == menu_id))).all()  # type: ignore
+            return (await db.scalars(select(Submenu).where(Submenu.menu_id == menu_id))).unique().all()  # type: ignore
 
     @staticmethod
     async def get_submenus_count(menu_id: str) -> int:
