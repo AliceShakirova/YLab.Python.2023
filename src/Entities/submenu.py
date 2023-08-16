@@ -1,5 +1,6 @@
 from pydantic import BaseModel, RootModel
 from sqlalchemy import ForeignKey, String
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import mapped_column, relationship
 
 from src.Entities.base import Base
@@ -14,6 +15,10 @@ class Submenu(Base):
     menu = relationship('Menu', back_populates='submenus', single_parent=True, innerjoin=True)
     dishes = relationship('Dish', back_populates='submenu', cascade='all, delete-orphan',
                           passive_deletes=True, lazy='joined')
+
+    @hybrid_property
+    def dishes_count(self):
+        return len(self.dishes)
 
     def __init__(self, title: str, description: str, menu_id: str, id: str | None = None) -> None:
         super().__init__(title, description, id)

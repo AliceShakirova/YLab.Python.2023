@@ -6,6 +6,7 @@ from openpyxl import load_workbook
 from openpyxl.cell import Cell
 from openpyxl.workbook import Workbook
 
+from src.Cache.caches import DishCache, MenuCache, SubmenuCache, clear_cache, init_cache
 from src.celery_worker import celery_app
 from src.Db.database import init_db
 from src.Entities.dish import Dish
@@ -22,16 +23,27 @@ menu_repo: MenuRepo = mr.MenuRepo()
 submenu_repo: SubmenuRepo = sr.SubmenuRepo()
 dish_repo: DishRepo = dr.DishRepo()
 
+menu_cache: MenuCache = MenuCache()
+submenu_cache: SubmenuCache = SubmenuCache()
+dish_cache: DishCache = DishCache()
 
-@celery_app.task()
-async def sync_task():
+filename: str = 'admin/Menu.xlsx'
+
+
+@celery_app.task
+def sync_task():
+    loop = asyncio.new_event_loop()
+    loop.run_until_complete(update_from_excel())
+
+
+async def update_from_excel():
     await init_db()
-    wb: openpyxl.Workbook = load_workbook(filename='../../admin/Menu.xlsx')  # type: ignore
+    await init_cache()
+    wb: openpyxl.Workbook = load_workbook(filename=filename)  # type: ignore
     data = await menu_repo.get_full_tree()
     tree = {}
 
     list(map(lambda menu: process_item(menu, tree), data))
-    print(tree)
 
     await process_menus(wb, tree)
 
@@ -54,6 +66,8 @@ async def process_menus(wb: Workbook, db_data: dict[str, Menu]):
     submenus_in_excel: set[str] = set()
     dishes_in_excel: set[str] = set()
 
+    await clear_cache()
+
     for row in wb.worksheets[0].rows:
         if row[0].value is not None:
             menu = process_menu(row)
@@ -63,8 +77,10 @@ async def process_menus(wb: Workbook, db_data: dict[str, Menu]):
 
             if found_menu is None:
                 await menu_repo.create_menu_from_object(menu)
+                await menu_cache.add_menu(menu)
             elif found_menu != menu:
                 await menu_repo.update_menu_from_object(menu)
+                await menu_cache.update_menu(menu)
 
         elif row[1].value is not None:
             submenu = process_submenu(row, current_menu_id)
@@ -77,8 +93,10 @@ async def process_menus(wb: Workbook, db_data: dict[str, Menu]):
 
             if found_submenu is None:
                 await submenu_repo.create_submenu_from_object(submenu)
+                await submenu_cache.add_submenu(submenu)
             elif found_submenu != submenu:
                 await submenu_repo.update_submenu_from_object(submenu)
+                await submenu_cache.update_submenu(submenu)
 
         elif row[2].value is not None:
             dish = process_dish(row, current_submenu_id)
@@ -91,8 +109,10 @@ async def process_menus(wb: Workbook, db_data: dict[str, Menu]):
 
             if found_dish is None:
                 await dish_repo.create_dish_from_object(dish)
+                await dish_cache.add_dish(current_menu_id, dish)
             elif found_dish != dish:
                 await dish_repo.update_dish_from_object(dish)
+                await dish_cache.update_dish(dish)
 
     menus_in_db: set[str] = set()
     submenus_in_db: set[str] = set()
@@ -136,5 +156,6 @@ def process_dish(row: tuple[Cell, ...], submenu_id: str):
 
 
 if __name__ == '__main__':
+    filename = '../../admin/Menu.xlsx'
     loop = asyncio.new_event_loop()
-    loop.run_until_complete(sync_task())
+    loop.run_until_complete(update_from_excel())

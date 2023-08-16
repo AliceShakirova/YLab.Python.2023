@@ -47,7 +47,7 @@ COPY --chown=appuser:appuser ./src ./src
 COPY --chown=appuser:appuser ./Tests ./Tests
 
 # Add permissions for app folder (pytest creating .pytest_cache folders)
-RUN chmod 777 ./
+RUN chown appuser:appuser ./
 
 # Switch to the non-privileged user to run the application.
 USER appuser

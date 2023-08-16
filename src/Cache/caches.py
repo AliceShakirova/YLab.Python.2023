@@ -11,13 +11,12 @@ from src.Entities.menu import Menu, MenuModel
 from src.Entities.submenu import Submenu, SubmenuModel
 
 conn_str = getenv('REDIS_OM_URL')
+if conn_str is None:
+    conn_str = 'redis://@localhost:6379'
 
 
 async def init_cache():
-    if conn_str is None:
-        redis_cache = redis.Redis(host='localhost', port=6379, decode_responses=True)
-    else:
-        redis_cache = redis.from_url(conn_str, decode_responses=True)
+    redis_cache = redis.from_url(conn_str, decode_responses=True)
     await redis_cache.close(close_connection_pool=False)
 
 
@@ -28,6 +27,11 @@ async def get_redis():
             yield redis_conn
         finally:
             await redis_conn.close(close_connection_pool=False)
+
+
+async def clear_cache():
+    async with get_redis() as redis_cache:
+        await redis_cache.flushdb()
 
 
 class MenuCache:
@@ -122,14 +126,14 @@ class SubmenuCache:
         return result
 
     @classmethod
-    async def add_submenu(cls, menu_id: str, submenu: Submenu) -> SubmenuModel:
+    async def add_submenu(cls, submenu: Submenu) -> SubmenuModel:
         model: SubmenuModel = SubmenuModel.model_validate(submenu, from_attributes=True)
         async with get_redis() as redis:
             await redis.set(model.id, model.model_dump_json(), ex=cache_settings.CACHE_EXPIRE_SECONDS)
-        submenu_ids = await SubmenuCache.get_submenu_ids(menu_id)
+        submenu_ids = await SubmenuCache.get_submenu_ids(submenu.menu_id)
         submenu_ids.add(model.id)
-        await SubmenuCache.save_submenu_ids(menu_id, submenu_ids)
-        await SubmenuCache.update_submenu_count(menu_id, 1)
+        await SubmenuCache.save_submenu_ids(submenu.menu_id, submenu_ids)
+        await SubmenuCache.update_submenu_count(submenu.menu_id, 1)
         return model
 
     @classmethod
@@ -236,14 +240,14 @@ class DishCache:
         return result
 
     @classmethod
-    async def add_dish(cls, menu_id: str, submenu_id: str, dish: Dish) -> DishModel:
+    async def add_dish(cls, menu_id: str, dish: Dish) -> DishModel:
         model: DishModel = DishModel.model_validate(dish, from_attributes=True)
         async with get_redis() as redis:
             await redis.set(model.id, model.model_dump_json(), ex=cache_settings.CACHE_EXPIRE_SECONDS)
-        dish_ids = await DishCache.get_dish_ids(submenu_id)
+        dish_ids = await DishCache.get_dish_ids(dish.submenu_id)
         dish_ids.add(dish.id)
-        await cls.save_dish_ids(submenu_id, dish_ids)
-        await cls.update_dishes_count(menu_id, submenu_id, 1)
+        await cls.save_dish_ids(dish.submenu_id, dish_ids)
+        await cls.update_dishes_count(menu_id, dish.submenu_id, 1)
         return model
 
     @classmethod

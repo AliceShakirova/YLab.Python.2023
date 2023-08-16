@@ -1,9 +1,11 @@
 __pycache__
 /workspace.xml
-__pycache__
 Repositories/__pycache__
 src/Entities/__pycache__
 venv
 .idea
 YLab_Python.egg-info
 /*.env
+/celerybeat-schedule.bak
+/celerybeat-schedule.dat
+/celerybeat-schedule.dir

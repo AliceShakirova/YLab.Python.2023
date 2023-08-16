@@ -1,4 +1,7 @@
+from functools import reduce
+
 from pydantic import BaseModel, RootModel
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
 from src.Entities.base import Base
@@ -11,6 +14,14 @@ class Menu(Base):
 
     submenus = relationship('Submenu', back_populates='menu', cascade='all, delete-orphan',
                             passive_deletes=True, lazy='joined')
+
+    @hybrid_property
+    def submenus_count(self):
+        return len(self.submenus)
+
+    @hybrid_property
+    def dishes_count(self):
+        return reduce(lambda self, submenu: submenu.dishes_count, self.submenus, 0)
 
     def __init__(self, title: str, description: str, id: str | None = None):
         super().__init__(title, description, id)

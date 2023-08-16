@@ -40,15 +40,20 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     --mount=type=bind,source=requirements-production.txt,target=requirements-production.txt \
     python -m pip install -r requirements-production.txt
 
-# Switch to the non-privileged user to run the application.
-USER appuser
-
 # Copy the source code into the container.
 COPY ./src ./src
+COPY ./admin ./admin
+COPY ./run.sh ./run.sh
+
+RUN chown appuser:appuser ./
+
+# Switch to the non-privileged user to run the application.
+USER appuser
 
 # Expose the port that the application listens on.
 EXPOSE 8000
 
 # Run the application.
-CMD ["celery", "-A", "src.celery_worker", "worker", "-D"]
-CMD ["uvicorn", "src.main:app", "--reload", "--host", "0.0.0.0"]
+#CMD ["celery", "-A", "src.celery_worker", "worker", "-D", "-B"]
+#ENTRYPOINT ["uvicorn", "src.main:app", "--reload", "--host", "0.0.0.0"]
+ENTRYPOINT ["uvicorn", "src.main:app", "--reload", "--host", "0.0.0.0"]

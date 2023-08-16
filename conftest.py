@@ -66,7 +66,7 @@ async def insert_menu_db(title: str, description: str) -> Menu:
 
 async def insert_menu_cache(menu_model: MenuModel) -> MenuModel:
     menu = Menu(title=menu_model.title, description=menu_model.description)
-    menu.submenus_count, menu.dishes_count = menu_model.submenus_count, menu_model.dishes_count
+#    menu.submenus_count, menu.dishes_count = menu_model.submenus_count, menu_model.dishes_count
     menu.id = menu_model.id
     return await MenuCache.add_menu(menu)
 
@@ -83,9 +83,9 @@ async def insert_submenu_db(title: str, description: str, menu_id: str) -> Subme
 async def insert_submenu_cache(submenu_id: str, title: str, description: str, dishes_count: int,
                                menu_id: str) -> SubmenuModel:
     submenu = Submenu(title=title, description=description, menu_id=menu_id)
-    submenu.dishes_count = dishes_count
+#    submenu.dishes_count = dishes_count
     submenu.id = submenu_id
-    return await SubmenuCache.add_submenu(menu_id=menu_id, submenu=submenu)
+    return await SubmenuCache.add_submenu(submenu=submenu)
 
 
 async def insert_dish_db(title: str, description: str, submenu_id: str, price: Decimal) -> Dish:
@@ -101,7 +101,7 @@ async def insert_dish_cache(dish_id: str, title: str, description: str, price: D
                             submenu_id: str) -> DishModel:
     dish = Dish(title=title, description=description, submenu_id=submenu_id, price=price)
     dish.id = dish_id
-    return await DishCache.add_dish(menu_id=menu_id, submenu_id=submenu_id, dish=dish)
+    return await DishCache.add_dish(menu_id=menu_id, dish=dish)
 
 
 @pytest.fixture
@@ -135,7 +135,7 @@ def insert_inst():
 
 async def insert_menu(storage: int = ADD_TO_CACHE) -> Menu | MenuModel:
     menu = Menu('My menu 1', 'My menu description 1')
-    menu.submenus_count, menu.dishes_count = 0, 0
+#    menu.submenus_count, menu.dishes_count = 0, 0
     test_menu: MenuModel = MenuModel.model_validate(menu, from_attributes=True)
     if storage == NOT_ADD:
         return test_menu
@@ -151,7 +151,7 @@ async def insert_submenu(storage: int = ADD_TO_CACHE) -> tuple[
     test_menu = await insert_menu(storage=ADD_TO_CACHE)
     test_menu.submenus_count += 1
     submenu = Submenu('My submenu 1', 'My submenu description 1', test_menu.id)
-    submenu.dishes_count = 0
+#    submenu.dishes_count = 0
     test_submenu: SubmenuModel = SubmenuModel.model_validate(submenu, from_attributes=True)
     if storage == NOT_ADD:
         return test_menu, test_submenu

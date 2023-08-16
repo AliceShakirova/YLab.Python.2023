@@ -1,9 +1,6 @@
-from celery.schedules import crontab
 from fastapi import BackgroundTasks
 
-from src.Background.sync_task import sync_task
 from src.Cache.caches import DishCache, MenuCache, SubmenuCache, init_cache
-from src.celery_worker import celery_app
 from src.Db.database import init_db
 from src.Entities.dish import Dish, DishCreateModel, DishModel
 from src.Entities.menu import Menu, MenuCreateModel, MenuModel
@@ -24,7 +21,6 @@ dish_cache = DishCache()
 async def init() -> None:
     await init_db()
     await init_cache()
-    celery_app.add_periodic_task(sig=sync_task.s(), name='sync_task', schedule=crontab(minute=15))
 
 
 async def get_full_tree() -> list:
@@ -39,14 +35,14 @@ async def get_all_menus() -> list[type[Menu]] | list[MenuModel]:
     all_menus = await menu_repo.get_all_menus()
     if all_menus is None:
         return []
-    for menu in all_menus:
-        menu.submenus_count, menu.dishes_count = await menu_repo.get_submenus_and_dishes_counts(menu.id)
+    # for menu in all_menus:
+    #    menu.submenus_count, menu.dishes_count = await menu_repo.get_submenus_and_dishes_counts(menu.id)
     return all_menus
 
 
 async def post_menu(menu: MenuCreateModel, background_tasks: BackgroundTasks) -> Menu:
     new_menu = await menu_repo.create_menu(title=menu.title, description=menu.description)
-    new_menu.submenus_count, new_menu.dishes_count = 0, 0
+    # new_menu.submenus_count, new_menu.dishes_count = 0, 0
     background_tasks.add_task(menu_cache.add_menu, new_menu)
     return new_menu
 
@@ -56,8 +52,8 @@ async def get_menu(menu_id: str) -> MenuModel | None:
     if cached_menu is not None:
         return cached_menu
     menu = await menu_repo.get_menu(menu_id=menu_id)
-    if menu is not None:
-        menu.submenus_count, menu.dishes_count = await menu_repo.get_submenus_and_dishes_counts(menu_id)
+#    if menu is not None:
+#        menu.submenus_count, menu.dishes_count = await menu_repo.get_submenus_and_dishes_counts(menu_id)
     return menu
 
 
@@ -65,7 +61,7 @@ async def patch_menu(menu_id: str, menu: MenuCreateModel, background_tasks: Back
     updated_menu = await menu_repo.update_menu(menu_id=menu_id, title=menu.title, description=menu.description)
     if updated_menu is None:
         return None
-    updated_menu.submenus_count, updated_menu.dishes_count = await menu_repo.get_submenus_and_dishes_counts(menu_id)
+#    updated_menu.submenus_count, updated_menu.dishes_count = await menu_repo.get_submenus_and_dishes_counts(menu_id)
     background_tasks.add_task(menu_cache.update_menu, updated_menu)
     return updated_menu
 
@@ -83,8 +79,8 @@ async def get_all_submenus(menu_id: str) -> list[Submenu] | list[SubmenuModel]:
     submenus = await submenu_repo.get_submenus_of_menu(menu_id)
     if not submenus:
         return []
-    for submenu in submenus:
-        submenu.dishes_count = await dish_repo.get_dishes_count(submenu.id)
+#    for submenu in submenus:
+#        submenu.dishes_count = await dish_repo.get_dishes_count(submenu.id)
     return submenus
 
 
@@ -97,15 +93,16 @@ async def get_submenu(menu_id: str, submenu_id: str) -> SubmenuModel | None:
     submenu = await submenu_cache.get_submenu(submenu_id)
     if submenu is None:
         submenu = await submenu_repo.get_submenu(menu_id, submenu_id)
-    if submenu is not None:
-        submenu.dishes_count = await dish_repo.get_dishes_count(submenu_id)
+#    if submenu is not None:
+#        submenu.dishes_count = await dish_repo.get_dishes_count(submenu_id)
     return submenu
 
 
 async def post_submenu(menu_id: str, submenu: SubmenuCreateModel, background_tasks: BackgroundTasks) -> Submenu:
-    new_submenu = await submenu_repo.create_submenu(title=submenu.title, description=submenu.description, menu_id=menu_id)
-    new_submenu.dishes_count = 0
-    background_tasks.add_task(submenu_cache.add_submenu, menu_id, new_submenu)
+    new_submenu = await submenu_repo.create_submenu(title=submenu.title, description=submenu.description,
+                                                    menu_id=menu_id)
+#    new_submenu.dishes_count = 0
+    background_tasks.add_task(submenu_cache.add_submenu, new_submenu)
     return new_submenu
 
 
@@ -115,7 +112,7 @@ async def patch_submenu(menu_id: str, submenu_id: str, submenu: SubmenuCreateMod
                                                         description=submenu.description, menu_id=menu_id)
     if updated_submenu is None:
         return None
-    updated_submenu.dishes_count = await dish_repo.get_dishes_count(updated_submenu.id)
+#    updated_submenu.dishes_count = await dish_repo.get_dishes_count(updated_submenu.id)
     background_tasks.add_task(submenu_cache.update_submenu, updated_submenu)
     return updated_submenu
 
@@ -169,7 +166,7 @@ async def post_dish(menu_id: str, submenu_id: str, dish: DishCreateModel,
         return None
     new_dish = await dish_repo.create_dish(title=dish.title, description=dish.description, submenu_id=submenu_id,
                                            price=dish.price)
-    background_tasks.add_task(dish_cache.add_dish, menu_id, submenu_id, new_dish)
+    background_tasks.add_task(dish_cache.add_dish, menu_id, new_dish)
     return new_dish
 
 
