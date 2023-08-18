@@ -17,7 +17,7 @@ class Submenu(Base):
                           passive_deletes=True, lazy='joined')
 
     @hybrid_property
-    def dishes_count(self):
+    def dishes_count(self) -> int:
         return len(self.dishes)
 
     def __init__(self, title: str, description: str, menu_id: str, id: str | None = None) -> None:

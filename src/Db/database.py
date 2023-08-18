@@ -40,7 +40,7 @@ async def init_db() -> None:
         await async_session.run_sync(Base.metadata.create_all)
 
 
-async def connect_create_if_not_exists(address, user, password, database):
+async def connect_create_if_not_exists(address: str, user: str, password: str, database: str) -> None:
     try:
 
         conn: Connection = await asyncpg.connect(host=address, user=user, password=password,  # type: ignore

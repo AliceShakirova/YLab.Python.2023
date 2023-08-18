@@ -1,3 +1,5 @@
+from typing import Callable
+
 import pytest
 from async_asgi_testclient import TestClient
 
@@ -13,13 +15,12 @@ client = TestClient(app)
 
 
 @pytest.mark.asyncio
-async def test_get_all_menu(clear_storage, insert_inst):
+async def test_get_all_menu(clear_storage: Callable, insert_inst: Callable) -> None:
     test_response_payload = [{'id': '', 'title': 'My menu 1',
                               'description': 'My menu description 1', 'submenus_count': 0, 'dishes_count': 0}]
-    test_response_payload[0] = await insert_inst(Menu, storage=conftest.ADD_TO_CACHE)
+    test_response_payload[0]['id'] = (await insert_inst(Menu, storage=conftest.ADD_TO_CACHE)).id
     response = await client.get(func_reverse('get_list_menus'))
     assert response.status_code == 200
-    test_response_payload[0].id = response.json()[0]['id']
     test_all_menus = await MenuCache.get_all_menus()
     test_response_payload[0]: MenuModel = MenuModel.model_validate(  # type: ignore
         test_response_payload[0], from_attributes=True)  # type: ignore
@@ -27,7 +28,7 @@ async def test_get_all_menu(clear_storage, insert_inst):
 
 
 @pytest.mark.asyncio
-async def test_get_target_menu(clear_storage, insert_inst):
+async def test_get_target_menu(clear_storage: Callable, insert_inst: Callable) -> None:
     test_response_payload = await insert_inst(Menu, storage=conftest.ADD_TO_CACHE)
     response = await client.get(func_reverse('get_target_menu', menu_id=test_response_payload.id))
     assert response.status_code == 200
@@ -39,7 +40,7 @@ async def test_get_target_menu(clear_storage, insert_inst):
 
 
 @pytest.mark.asyncio
-async def test_patch_menu(clear_storage, insert_inst):
+async def test_patch_menu(clear_storage: Callable, insert_inst: Callable) -> None:
     test_request_payload = {'title': 'My updated menu 1', 'description': 'My updated menu description 1',
                             'submenus_count': 0, 'dishes_count': 0}
     test_response_payload = {'id': '', 'title': 'My updated menu 1', 'description': 'My updated menu description 1',
@@ -54,7 +55,7 @@ async def test_patch_menu(clear_storage, insert_inst):
 
 
 @pytest.mark.asyncio
-async def test_delete_menu(clear_storage, insert_inst):
+async def test_delete_menu(clear_storage: Callable, insert_inst: Callable) -> None:
     test_menu = await insert_inst(Menu, storage=conftest.ADD_TO_CACHE)
     response = await client.delete(func_reverse('delete_menu', menu_id=test_menu.id))
     assert response.status_code == 200

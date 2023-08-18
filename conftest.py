@@ -27,14 +27,14 @@ def event_loop():
 
 
 @pytest.fixture(scope='session', autouse=True)
-async def init():
+async def init() -> None:
     await init_db()
     await init_cache()
 
 
 @pytest.fixture
 def clear_storage() -> Generator | None:
-    async def clear_storage_func():
+    async def clear_storage_func() -> None:
         async with get_session() as session:
             await session.execute(text(f'TRUNCATE {Menu.__tablename__} CASCADE'))
             await session.commit()
@@ -47,7 +47,7 @@ def clear_storage() -> Generator | None:
 
 
 @pytest.fixture()
-async def start_clear_storage():
+async def start_clear_storage() -> None:
     async with get_session() as session:
         await session.execute(text(f'TRUNCATE {Menu.__tablename__} CASCADE'))
         await session.commit()
@@ -105,7 +105,7 @@ async def insert_dish_cache(dish_id: str, title: str, description: str, price: D
 
 
 @pytest.fixture
-def insert_full_menu():
+def insert_full_menu() -> Generator:
     async def insert_full_menu_func(menu: Menu) -> Menu:
         async with get_session() as session:
             menu = menu
@@ -118,17 +118,22 @@ def insert_full_menu():
 
 
 @pytest.fixture
-def insert_inst():
-    async def insert_inst_func(inst: Menu | Submenu | Dish, storage: int):
+def insert_inst() -> Generator:
+    async def insert_inst_func(inst: Menu | Submenu | Dish,
+                               storage: int) -> (Menu | MenuModel | tuple[
+            Menu | MenuModel, Submenu | SubmenuModel] | tuple[
+            Menu | MenuModel, Submenu | SubmenuModel, Dish | DishModel]):
         if inst is Menu:
             test_menu = await insert_menu(storage=storage)
             return test_menu
-        if inst is Submenu:
+        elif inst is Submenu:
             test_menu, test_submenu = await insert_submenu(storage=storage)
             return test_menu, test_submenu
-        if inst is Dish:
+        elif inst is Dish:
             test_menu, test_submenu, test_dish = await insert_dish(storage=storage)
             return test_menu, test_submenu, test_dish
+        else:
+            raise TypeError('inst')
 
     yield insert_inst_func
 

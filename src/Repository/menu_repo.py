@@ -73,7 +73,7 @@ class MenuRepo:
                 .where(Submenu.menu_id == menu_id))).one()
             return result
 
-    async def get_all_menus_submenus_and_dishes(self):
+    async def get_all_menus_submenus_and_dishes(self) -> list:
         async with get_session() as db:
             return (await db.scalars(
                 select(Menu, Submenu, Dish)
@@ -85,7 +85,7 @@ class MenuRepo:
             )).all()
 
     @staticmethod
-    async def get_full_tree():
+    async def get_full_tree() -> list[Menu]:
         async with get_session() as db:
             return (await db.scalars(
                 select(Menu).options(joinedload(Menu.submenus).options(joinedload(Submenu.dishes)))
@@ -93,6 +93,6 @@ class MenuRepo:
             )).unique().all()
 
     @staticmethod
-    async def delete_menus(menus: set):
+    async def delete_menus(menus: set) -> None:
         async with get_session() as db:
             await db.execute(delete(Menu).where(Menu.id.in_(menus)))

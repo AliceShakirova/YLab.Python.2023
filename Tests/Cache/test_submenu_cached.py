@@ -1,3 +1,5 @@
+from typing import Callable
+
 import pytest
 from async_asgi_testclient import TestClient
 
@@ -12,8 +14,8 @@ client = TestClient(app)
 
 
 @pytest.mark.asyncio
-async def test_get_all_submenu_empty(clear_storage, insert_inst):
-    test_response_payload = []
+async def test_get_all_submenu_empty(clear_storage: Callable, insert_inst: Callable) -> None:
+    test_response_payload: list = []
     test_menu = await insert_inst(Menu, storage=conftest.ADD_TO_CACHE)
     response = await client.get(func_reverse('get_list_submenus', menu_id=test_menu.id))
     assert response.status_code == 200
@@ -24,15 +26,15 @@ async def test_get_all_submenu_empty(clear_storage, insert_inst):
 
 
 @pytest.mark.asyncio
-async def test_post_submenu(clear_storage, insert_inst):  # type: ignore
+async def test_post_submenu(clear_storage: Callable, insert_inst: Callable) -> None:
     test_request_payload = {'title': 'My submenu 1', 'description': 'My submenu description 1'}
-    test_response_payload = {'id': '', 'title': 'My submenu 1',
-                             'description': 'My submenu description 1', 'dishes_count': 0}
+    test_response_payload: dict[str, str | int] = {'id': '', 'title': 'My submenu 1',
+                                                   'description': 'My submenu description 1', 'dishes_count': 0}
     test_menu = await insert_inst(Menu, storage=conftest.ADD_TO_CACHE)
     response = await client.post(func_reverse('post_submenu', menu_id=test_menu.id), json=test_request_payload)
     assert response.status_code == 201
     test_response_payload['id'] = response.json()['id']
-    test_submenu_cache = await SubmenuCache.get_submenu(test_response_payload['id'])
+    test_submenu_cache = await SubmenuCache.get_submenu(test_response_payload['id'])  # type: ignore
     test_submenu: SubmenuModel = SubmenuModel.model_validate(  # type: ignore
         test_response_payload, from_attributes=True)  # type: ignore
     assert test_submenu_cache == test_submenu
@@ -41,7 +43,7 @@ async def test_post_submenu(clear_storage, insert_inst):  # type: ignore
 
 
 @pytest.mark.asyncio
-async def test_get_all_submenu(clear_storage, insert_inst):
+async def test_get_all_submenu(clear_storage: Callable, insert_inst: Callable) -> None:
     test_submenu_request_payload = {'title': 'My submenu 1', 'description': 'My submenu description 1'}
     test_response_payload = [{'id': '', 'title': 'My submenu 1',
                              'description': 'My submenu description 1', 'dishes_count': 0}]
@@ -60,7 +62,7 @@ async def test_get_all_submenu(clear_storage, insert_inst):
 
 
 @pytest.mark.asyncio
-async def test_get_target_submenu(clear_storage, insert_inst):
+async def test_get_target_submenu(clear_storage: Callable, insert_inst: Callable) -> None:
     test_menu, test_response_payload = await insert_inst(Submenu, storage=conftest.ADD_TO_CACHE)
     response = await client.get(func_reverse('get_target_submenu', menu_id=test_menu.id,
                                              submenu_id=test_response_payload.id))
@@ -75,7 +77,7 @@ async def test_get_target_submenu(clear_storage, insert_inst):
 
 
 @pytest.mark.asyncio
-async def test_get_target_submenu_not_found(clear_storage, insert_inst):
+async def test_get_target_submenu_not_found(clear_storage: Callable, insert_inst: Callable) -> None:
     test_menu = await insert_inst(Menu, storage=conftest.ADD_TO_CACHE)
     response = await client.get(func_reverse('get_target_submenu', menu_id=test_menu.id,
                                              submenu_id='a2eb416c-2245-4526-bb4b-6343d5c5016f'))
@@ -87,7 +89,7 @@ async def test_get_target_submenu_not_found(clear_storage, insert_inst):
 
 
 @pytest.mark.asyncio
-async def test_patch_submenu(clear_storage, insert_inst):
+async def test_patch_submenu(clear_storage: Callable, insert_inst: Callable) -> None:
     test_request_payload = {'title': 'My updated submenu 1', 'description': 'My updated submenu description 1'}
     test_response_payload = {'id': '', 'title': 'My updated submenu 1',
                              'description': 'My updated submenu description 1', 'dishes_count': 0}
@@ -96,7 +98,7 @@ async def test_patch_submenu(clear_storage, insert_inst):
                                                submenu_id=test_submenu.id), json=test_request_payload)
     assert response.status_code == 200
     test_response_payload['id'] = response.json()['id']
-    test_submenu_cache = await SubmenuCache.get_submenu(test_response_payload['id'])
+    test_submenu_cache = await SubmenuCache.get_submenu(test_response_payload['id'])  # type: ignore
     test_submenu: SubmenuModel = SubmenuModel.model_validate(  # type: ignore
         test_response_payload, from_attributes=True)  # type: ignore
     assert test_submenu_cache == test_submenu
@@ -105,7 +107,7 @@ async def test_patch_submenu(clear_storage, insert_inst):
 
 
 @pytest.mark.asyncio
-async def test_patch_submenu_not_found(clear_storage, insert_inst):
+async def test_patch_submenu_not_found(clear_storage: Callable, insert_inst: Callable) -> None:
     test_menu = await insert_inst(Menu, storage=conftest.ADD_TO_CACHE)
     response = await client.get(func_reverse('patch_submenu', menu_id=test_menu.id,
                                              submenu_id='a2eb416c-2245-4526-bb4b-6343d5c5016f'))
@@ -117,7 +119,7 @@ async def test_patch_submenu_not_found(clear_storage, insert_inst):
 
 
 @pytest.mark.asyncio
-async def test_delete_submenu(clear_storage, insert_inst):
+async def test_delete_submenu(clear_storage: Callable, insert_inst: Callable) -> None:
     test_menu, test_submenu = await insert_inst(Submenu, storage=conftest.ADD_TO_CACHE)
     response = await client.delete(func_reverse('delete_submenu', menu_id=test_menu.id,
                                                 submenu_id=test_submenu.id))
@@ -129,7 +131,7 @@ async def test_delete_submenu(clear_storage, insert_inst):
 
 
 @pytest.mark.asyncio
-async def test_delete_submenu_not_found(clear_storage, insert_inst):
+async def test_delete_submenu_not_found(clear_storage: Callable, insert_inst: Callable) -> None:
     test_menu = await insert_inst(Menu, storage=conftest.ADD_TO_CACHE)
     response = await client.delete(func_reverse('delete_submenu', menu_id=test_menu.id,
                                                 submenu_id='a2eb416c-2245-4526-bb4b-6343d5c5016f'))

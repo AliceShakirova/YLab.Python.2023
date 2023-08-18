@@ -23,7 +23,7 @@ class SubmenuRepo:
             return submenu
 
     @staticmethod
-    async def get_all_submenus(self) -> list[type[Submenu]]:
+    async def get_all_submenus() -> list[type[Submenu]]:
         async with get_session() as db:
             all_submenus = (await db.scalars(select(Submenu))).all()
             return all_submenus
@@ -80,6 +80,6 @@ class SubmenuRepo:
             return await db.scalar(select(func.count(Submenu)).where(menu_id=menu_id))
 
     @staticmethod
-    async def delete_submenus(submenus: set):
+    async def delete_submenus(submenus: set) -> None:
         async with get_session() as db:
             await db.execute(delete(Submenu).where(Submenu.id.in_(submenus)))

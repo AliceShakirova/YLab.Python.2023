@@ -1,3 +1,5 @@
+from typing import Callable
+
 import pytest
 from async_asgi_testclient import TestClient
 
@@ -20,7 +22,7 @@ async def test_get_all_dish_empty(clear_storage, insert_inst):
 
 
 @pytest.mark.asyncio
-async def test_post_dish(clear_storage, insert_inst):
+async def test_post_dish(clear_storage: Callable, insert_inst: Callable) -> None:
     test_request_payload = {'title': 'My dish 1', 'description': 'My dish description 1', 'price': '12.50'}
     test_response_payload = {'id': '', 'title': 'My dish 1', 'description': 'My dish description 1', 'price': '12.50'}
     test_menu, test_submenu = await insert_inst(Submenu, storage=conftest.ADD_TO_DB)
@@ -32,7 +34,7 @@ async def test_post_dish(clear_storage, insert_inst):
 
 
 @pytest.mark.asyncio
-async def test_get_all_dish(clear_storage, insert_inst):
+async def test_get_all_dish(clear_storage: Callable, insert_inst: Callable) -> None:
     test_response_payload = [{'id': '', 'title': 'My dish 1', 'description': 'My dish description 1', 'price': '12.50'}]
     test_menu, test_submenu = await insert_inst(Submenu, storage=conftest.ADD_TO_DB)
     test_dish_request_payload = {'title': 'My dish 1', 'description': 'My dish description 1', 'price': '12.50'}
@@ -46,7 +48,7 @@ async def test_get_all_dish(clear_storage, insert_inst):
 
 
 @pytest.mark.asyncio
-async def test_get_target_dish(clear_storage, insert_inst):
+async def test_get_target_dish(clear_storage: Callable, insert_inst: Callable) -> None:
     test_response_payload = {'id': '', 'title': 'My dish 1', 'description': 'My dish description 1', 'price': '12.50'}
     test_menu, test_submenu = await insert_inst(Submenu, storage=conftest.ADD_TO_DB)
     test_dish_request_payload = {'title': 'My dish 1', 'description': 'My dish description 1', 'price': '12.50'}
@@ -60,7 +62,7 @@ async def test_get_target_dish(clear_storage, insert_inst):
 
 
 @pytest.mark.asyncio
-async def test_get_target_dish_not_found(clear_storage, insert_inst):
+async def test_get_target_dish_not_found(clear_storage: Callable, insert_inst: Callable) -> None:
     test_response_payload = {'detail': 'dish not found'}
     test_menu, test_submenu = await insert_inst(Submenu, storage=conftest.ADD_TO_DB)
     response = await client.get(func_reverse('get_target_dish', menu_id=test_menu.id,
@@ -71,7 +73,7 @@ async def test_get_target_dish_not_found(clear_storage, insert_inst):
 
 
 @pytest.mark.asyncio
-async def test_patch_dish(clear_storage, insert_inst):
+async def test_patch_dish(clear_storage: Callable, insert_inst: Callable) -> None:
     test_request_payload = {'title': 'My updated dish 1', 'description': 'My updated dish description 1',
                             'price': '14.50'}
     test_response_payload = {'id': '', 'title': 'My updated dish 1', 'description': 'My updated dish description 1',
@@ -89,7 +91,7 @@ async def test_patch_dish(clear_storage, insert_inst):
 
 
 @pytest.mark.asyncio
-async def test_patch_dish_not_found(clear_storage, insert_inst):
+async def test_patch_dish_not_found(clear_storage: Callable, insert_inst: Callable) -> None:
     test_response_payload = {'detail': 'dish not found'}
     test_menu, test_submenu = await insert_inst(Submenu, storage=conftest.ADD_TO_DB)
     response = await client.get(func_reverse('patch_dish', menu_id=test_menu.id,
@@ -100,7 +102,7 @@ async def test_patch_dish_not_found(clear_storage, insert_inst):
 
 
 @pytest.mark.asyncio
-async def test_delete_dish(clear_storage, insert_inst):
+async def test_delete_dish(clear_storage: Callable, insert_inst: Callable) -> None:
     test_response_payload = {'status': True, 'message': 'The dish has been deleted'}
     test_menu, test_submenu = await insert_inst(Submenu, storage=conftest.ADD_TO_DB)
     test_dish_request_payload = {'title': 'My dish 1', 'description': 'My dish description 1', 'price': '12.50'}
@@ -113,7 +115,7 @@ async def test_delete_dish(clear_storage, insert_inst):
 
 
 @pytest.mark.asyncio
-async def test_delete_dish_not_found(clear_storage, insert_inst):
+async def test_delete_dish_not_found(clear_storage: Callable, insert_inst: Callable) -> None:
     test_response_payload = {'status': False, 'message': 'dish not found'}
     test_menu, test_submenu = await insert_inst(Submenu, storage=conftest.ADD_TO_DB)
     response = await client.delete(func_reverse('delete_dish', menu_id=test_menu.id,

@@ -16,14 +16,14 @@ class Menu(Base):
                             passive_deletes=True, lazy='joined')
 
     @hybrid_property
-    def submenus_count(self):
+    def submenus_count(self) -> int:
         return len(self.submenus)
 
     @hybrid_property
-    def dishes_count(self):
+    def dishes_count(self) -> int:
         return reduce(lambda self, submenu: submenu.dishes_count, self.submenus, 0)
 
-    def __init__(self, title: str, description: str, id: str | None = None):
+    def __init__(self, title: str, description: str, id: str | None = None) -> None:
         super().__init__(title, description, id)
 
 

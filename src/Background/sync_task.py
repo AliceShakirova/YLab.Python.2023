@@ -31,24 +31,24 @@ filename: str = 'admin/Menu.xlsx'
 
 
 @celery_app.task
-def sync_task():
+def sync_task() -> None:
     loop = asyncio.new_event_loop()
     loop.run_until_complete(update_from_excel())
 
 
-async def update_from_excel():
+async def update_from_excel() -> None:
     await init_db()
     await init_cache()
     wb: openpyxl.Workbook = load_workbook(filename=filename)  # type: ignore
     data = await menu_repo.get_full_tree()
-    tree = {}
+    tree: dict = {}
 
     list(map(lambda menu: process_item(menu, tree), data))
 
     await process_menus(wb, tree)
 
 
-def process_item(item: Menu | Submenu | Dish, tree: dict):
+def process_item(item: Menu | Submenu | Dish, tree: dict) -> None:
     tree[item.id] = item
     if type(item) is Menu:
         item.submenu_tree = {}
@@ -58,7 +58,7 @@ def process_item(item: Menu | Submenu | Dish, tree: dict):
         list(map(lambda dish: process_item(dish, item.dish_tree), item.dishes))
 
 
-async def process_menus(wb: Workbook, db_data: dict[str, Menu]):
+async def process_menus(wb: Workbook, db_data: dict[str, Menu]) -> None:
     current_menu_id: str = ''
     current_submenu_id: str = ''
 
@@ -133,21 +133,21 @@ async def process_menus(wb: Workbook, db_data: dict[str, Menu]):
     await dish_repo.delete_dishes(dishes_to_delete)
 
 
-def process_menu(row: tuple[Cell, ...]):
+def process_menu(row: tuple[Cell, ...]) -> Menu:
     menu_id: str = row[0].value
     menu_title: str = row[1].value
     menu_description: str = row[2].value
     return Menu(menu_title, menu_description, menu_id)
 
 
-def process_submenu(row: tuple[Cell, ...], menu_id: str):
+def process_submenu(row: tuple[Cell, ...], menu_id: str) -> Submenu:
     submenu_id: str = row[1].value
     submenu_title: str = row[2].value
     submenu_description: str = row[3].value
     return Submenu(submenu_title, submenu_description, menu_id, submenu_id)
 
 
-def process_dish(row: tuple[Cell, ...], submenu_id: str):
+def process_dish(row: tuple[Cell, ...], submenu_id: str) -> Dish:
     dish_id: str = row[2].value
     dish_title: str = row[3].value
     dish_description: str = row[4].value

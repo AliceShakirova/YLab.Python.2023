@@ -1,3 +1,5 @@
+from typing import Callable
+
 import pytest
 from _decimal import Decimal
 from async_asgi_testclient import TestClient
@@ -14,7 +16,7 @@ client = TestClient(app)
 
 
 @pytest.mark.asyncio
-async def test_get_all_inst(clear_storage, insert_full_menu):
+async def test_get_all_inst(clear_storage: Callable, insert_full_menu: Callable) -> None:
     menu_1: Menu = Menu(id='a2eb416c-2245-4526-bb4b-6343d5c5016f', title='My menu 1',
                         description='My menu description 1')
     submenu_1: Submenu = Submenu(id='bc19488a-cc0e-4eaa-8d21-4d486a45392f', title='My submenu 1',
@@ -37,15 +39,15 @@ async def test_get_all_inst(clear_storage, insert_full_menu):
 
 
 @pytest.mark.asyncio
-async def test_get_all_menu_empty_storage(clear_storage):
-    test_response_payload = []
+async def test_get_all_menu_empty_storage(clear_storage: Callable) -> None:
+    test_response_payload: list = []
     response = await client.get(func_reverse('get_list_menus'))
     assert response.status_code == 200
     assert response.json() == test_response_payload
 
 
 @pytest.mark.asyncio
-async def test_post_menu(clear_storage, insert_inst):
+async def test_post_menu(clear_storage: Callable, insert_inst: Callable) -> None:
     test_request_payload = {'title': 'My menu 1', 'description': 'My menu description 1'}
     test_response_payload = await insert_inst(Menu, storage=conftest.NOT_ADD)
     response = await client.post(func_reverse('post_menu'), json=test_request_payload)
@@ -56,7 +58,7 @@ async def test_post_menu(clear_storage, insert_inst):
 
 
 @pytest.mark.asyncio
-async def test_get_all_menu(clear_storage, insert_inst):
+async def test_get_all_menu(clear_storage: Callable, insert_inst: Callable) -> None:
     test_response_payload = [{'id': '', 'title': 'My menu 1',
                               'description': 'My menu description 1', 'submenus_count': 0, 'dishes_count': 0}]
     test_response_payload[0]['id'] = (await insert_inst(Menu, storage=conftest.ADD_TO_DB)).id
@@ -66,7 +68,7 @@ async def test_get_all_menu(clear_storage, insert_inst):
 
 
 @pytest.mark.asyncio
-async def test_get_target_menu(clear_storage, insert_inst):
+async def test_get_target_menu(clear_storage: Callable, insert_inst: Callable) -> None:
     test_response_payload = {'id': '', 'title': 'My menu 1', 'description': 'My menu description 1',
                              'submenus_count': 0, 'dishes_count': 0}
     test_menu = await insert_inst(Menu, storage=conftest.ADD_TO_DB)
@@ -77,7 +79,7 @@ async def test_get_target_menu(clear_storage, insert_inst):
 
 
 @pytest.mark.asyncio
-async def test_get_target_menu_not_found(clear_storage):
+async def test_get_target_menu_not_found(clear_storage: Callable) -> None:
     test_response_payload = {'detail': 'menu not found'}
     response = await client.get(func_reverse('get_target_menu', menu_id='a2eb416c-2245-4526-bb4b-6343d5c5016f'))
     assert response.status_code == 404
@@ -85,7 +87,7 @@ async def test_get_target_menu_not_found(clear_storage):
 
 
 @pytest.mark.asyncio
-async def test_patch_menu(clear_storage, insert_inst):
+async def test_patch_menu(clear_storage: Callable, insert_inst: Callable) -> None:
     test_request_payload = {'title': 'My updated menu 1', 'description': 'My updated menu description 1',
                             'submenus_count': 0, 'dishes_count': 0}
     test_response_payload = {'id': '', 'title': 'My updated menu 1', 'description': 'My updated menu description 1',
@@ -98,7 +100,7 @@ async def test_patch_menu(clear_storage, insert_inst):
 
 
 @pytest.mark.asyncio
-async def test_patch_menu_not_found(clear_storage):
+async def test_patch_menu_not_found(clear_storage: Callable) -> None:
     test_response_payload = {'detail': 'menu not found'}
     response = await client.get(func_reverse('patch_menu', menu_id='a2eb416c-2245-4526-bb4b-6343d5c5016f'))
     assert response.status_code == 404
@@ -106,7 +108,7 @@ async def test_patch_menu_not_found(clear_storage):
 
 
 @pytest.mark.asyncio
-async def test_delete_menu(clear_storage, insert_inst):
+async def test_delete_menu(clear_storage: Callable, insert_inst: Callable) -> None:
     test_response_payload = {'status': True, 'message': 'The menu has been deleted'}
     test_menu = await insert_inst(Menu, storage=conftest.ADD_TO_DB)
     response = await client.delete(func_reverse('delete_menu', menu_id=test_menu.id))
@@ -115,7 +117,7 @@ async def test_delete_menu(clear_storage, insert_inst):
 
 
 @pytest.mark.asyncio
-async def test_delete_menu_not_found(clear_storage):
+async def test_delete_menu_not_found(clear_storage: Callable) -> None:
     test_response_payload = {'status': False, 'message': 'menu not found'}
     response = await client.delete(func_reverse('delete_menu', menu_id='a2eb416c-2245-4526-bb4b-6343d5c5016f'))
     assert response.status_code == 404

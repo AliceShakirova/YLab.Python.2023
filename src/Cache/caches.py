@@ -1,6 +1,7 @@
 import json
 from contextlib import asynccontextmanager
 from os import getenv
+from typing import AsyncGenerator
 
 import redis.asyncio as redis
 from redis.asyncio.client import Pipeline
@@ -10,18 +11,21 @@ from src.Entities.dish import Dish, DishModel
 from src.Entities.menu import Menu, MenuModel
 from src.Entities.submenu import Submenu, SubmenuModel
 
-conn_str = getenv('REDIS_OM_URL')
-if conn_str is None:
+conn_str_env = getenv('REDIS_OM_URL')
+if conn_str_env is None:
     conn_str = 'redis://@localhost:6379'
+else:
+    conn_str = conn_str_env
 
 
-async def init_cache():
+async def init_cache() -> None:
     redis_cache = redis.from_url(conn_str, decode_responses=True)
     await redis_cache.close(close_connection_pool=False)
 
 
 @asynccontextmanager
-async def get_redis():
+async def get_redis() -> AsyncGenerator:
+    redis_conn: redis.Redis
     async with redis.from_url(conn_str, decode_responses=True) as redis_conn:
         try:
             yield redis_conn
@@ -29,7 +33,8 @@ async def get_redis():
             await redis_conn.close(close_connection_pool=False)
 
 
-async def clear_cache():
+async def clear_cache() -> None:
+    redis_cache: redis.Redis
     async with get_redis() as redis_cache:
         await redis_cache.flushdb()
 
@@ -77,7 +82,7 @@ class MenuCache:
         return model
 
     @classmethod
-    async def delete_menu(cls, menu_id: str):
+    async def delete_menu(cls, menu_id: str) -> None:
         async with get_redis() as redis:
             pipe = redis.pipeline()
             pipe.delete(menu_id)
@@ -97,7 +102,7 @@ class MenuCache:
         return menu_ids
 
     @classmethod
-    async def save_all_menu_ids(cls, menu_ids: set[str], pipe: Pipeline | None = None):
+    async def save_all_menu_ids(cls, menu_ids: set[str], pipe: Pipeline | None = None) -> None:
         if pipe:
             pipe.set(cls.all_menus_key, json.dumps(list(menu_ids)), ex=cache_settings.CACHE_EXPIRE_SECONDS)
             return
@@ -152,7 +157,7 @@ class SubmenuCache:
         return model
 
     @classmethod
-    async def delete_submenu(cls, menu_id: str, submenu_id: str):
+    async def delete_submenu(cls, menu_id: str, submenu_id: str) -> None:
         dishes_count = 0
         dish_ids = await DishCache.get_dish_ids(submenu_id)
         if dish_ids is not None:
@@ -169,7 +174,7 @@ class SubmenuCache:
         await DishCache.delete_all_dishes(submenu_id, pipe)
 
     @classmethod
-    async def delete_all_submenus(cls, menu_id: str, pipe: Pipeline):
+    async def delete_all_submenus(cls, menu_id: str, pipe: Pipeline) -> None:
         submenu_ids = await cls.get_submenu_ids(menu_id)
         for submenu_id in submenu_ids:
             await DishCache.delete_all_dishes(submenu_id, pipe)
@@ -186,13 +191,14 @@ class SubmenuCache:
         return submenu_ids
 
     @classmethod
-    async def save_submenu_ids(cls, menu_id: str, submenu_ids: set[str]):
+    async def save_submenu_ids(cls, menu_id: str, submenu_ids: set[str]) -> None:
         async with get_redis() as redis:
             await redis.set(cls.SUBMENUS_KEY_FORMAT.format(menu_id=menu_id),
                             json.dumps(list(submenu_ids)), ex=cache_settings.CACHE_EXPIRE_SECONDS)
 
     @classmethod
-    async def update_submenu_count(cls, menu_id: str, submenus_additional_count: int, deleted_dishes_count: int = 0):
+    async def update_submenu_count(cls, menu_id: str, submenus_additional_count: int,
+                                   deleted_dishes_count: int = 0) -> None:
         async with get_redis() as redis:
             menu_json = await redis.get(menu_id)
             if menu_json is None:
@@ -265,7 +271,7 @@ class DishCache:
             await redis.set(model.id, model.model_dump_json(), ex=cache_settings.CACHE_EXPIRE_SECONDS)
 
     @classmethod
-    async def delete_dish(cls, menu_id: str, submenu_id: str, dish_id: str):
+    async def delete_dish(cls, menu_id: str, submenu_id: str, dish_id: str) -> None:
         async with get_redis() as redis:
             if await redis.get(dish_id) is not None:
                 await redis.delete(dish_id)
@@ -284,7 +290,7 @@ class DishCache:
         return dish_ids
 
     @classmethod
-    async def save_dish_ids(cls, submenu_id: str, dish_ids: set[str]):
+    async def save_dish_ids(cls, submenu_id: str, dish_ids: set[str]) -> None:
         async with get_redis() as redis:
             await redis.set(cls.DISHES_KEY_FORMAT.format(submenu_id=submenu_id),
                             json.dumps(list(dish_ids)), ex=cache_settings.CACHE_EXPIRE_SECONDS)
@@ -306,7 +312,7 @@ class DishCache:
             await redis.set(menu_id, menu.model_dump_json(), ex=cache_settings.CACHE_EXPIRE_SECONDS)
 
     @classmethod
-    async def delete_all_dishes(cls, submenu_id: str, pipe: Pipeline):
+    async def delete_all_dishes(cls, submenu_id: str, pipe: Pipeline) -> None:
         dish_ids = await cls.get_dish_ids(submenu_id)
         for dish_id in dish_ids:
             pipe.delete(dish_id)

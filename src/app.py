@@ -82,7 +82,8 @@ async def get_target_submenu(menu_id: str, submenu_id: str) -> SubmenuModel | JS
 
 
 @app.post('/api/v1/menus/{menu_id}/submenus', response_model=SubmenuModel, status_code=201)
-async def post_submenu(menu_id: str, submenu: SubmenuCreateModel, background_tasks: BackgroundTasks) -> Submenu | SubmenuModel:
+async def post_submenu(menu_id: str, submenu: SubmenuCreateModel,
+                       background_tasks: BackgroundTasks) -> Submenu | SubmenuModel:
     return await service.post_submenu(menu_id, submenu, background_tasks)
 
 
