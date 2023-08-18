@@ -48,7 +48,8 @@ async def get_target_menu(menu_id: str) -> MenuModel | JSONResponse:
 
 
 @app.patch('/api/v1/menus/{menu_id}', response_model=MenuModel)
-async def patch_menu(menu_id: str, menu: MenuCreateModel, background_tasks: BackgroundTasks) -> MenuModel | JSONResponse:
+async def patch_menu(menu_id: str, menu: MenuCreateModel,
+                     background_tasks: BackgroundTasks) -> Menu | JSONResponse:
     updated_menu = await service.patch_menu(menu_id, menu, background_tasks)
     if not updated_menu:
         return JSONResponse({'detail': 'menu not found'}, 404)

@@ -1,5 +1,3 @@
-from typing import Any
-
 from sqlalchemy import Row, delete, func, select
 from sqlalchemy.orm import joinedload
 
@@ -10,7 +8,8 @@ from src.Entities.submenu import Submenu
 
 
 class MenuRepo:
-    async def create_menu(self, title: str, description: str) -> Menu:
+    @staticmethod
+    async def create_menu(title: str, description: str) -> Menu:
         async with get_session() as db:
             new_menu = Menu(title=title, description=description)
             db.add(new_menu)
@@ -18,23 +17,27 @@ class MenuRepo:
             await db.refresh(new_menu)
             return new_menu
 
-    async def create_menu_from_object(self, menu: Menu) -> Menu:
+    @staticmethod
+    async def create_menu_from_object(menu: Menu) -> Menu:
         async with get_session() as db:
             db.add(menu)
             await db.commit()
             await db.refresh(menu)
             return menu
 
-    async def get_all_menus(self) -> list[type[Menu]]:
+    @staticmethod
+    async def get_all_menus() -> list[type[Menu]]:
         async with get_session() as db:
             all_menus = (await db.scalars(select(Menu))).unique().all()
             return all_menus
 
-    async def get_menu(self, menu_id: str) -> Menu | None:
+    @staticmethod
+    async def get_menu(menu_id: str) -> Menu | None:
         async with get_session() as db:
             return (await db.scalars(select(Menu).where(Menu.id == menu_id))).first()
 
-    async def update_menu(self, menu_id: str, title: str, description: str) -> Menu | None:
+    @staticmethod
+    async def update_menu(menu_id: str, title: str, description: str) -> Menu | None:
         async with get_session() as db:
             menu_to_update = (await db.scalars(select(Menu).where(Menu.id == menu_id))).first()
             if menu_to_update:
@@ -44,7 +47,8 @@ class MenuRepo:
                 await db.refresh(menu_to_update)
             return menu_to_update
 
-    async def update_menu_from_object(self, menu: Menu) -> Menu | None:
+    @staticmethod
+    async def update_menu_from_object(menu: Menu) -> Menu | None:
         async with get_session() as db:
             menu_to_update = (await db.scalars(select(Menu).where(Menu.id == menu.id))).first()
             if menu_to_update:
@@ -54,7 +58,8 @@ class MenuRepo:
                 await db.refresh(menu_to_update)
             return menu_to_update
 
-    async def delete_menu(self, menu_id: str) -> bool:
+    @staticmethod
+    async def delete_menu(menu_id: str) -> bool:
         async with get_session() as db:
             menu_to_delete = (await db.scalars(select(Menu).where(Menu.id == menu_id))).first()
             if not menu_to_delete:
@@ -63,7 +68,8 @@ class MenuRepo:
             await db.commit()
             return True
 
-    async def get_submenus_and_dishes_counts(self, menu_id: str) -> Row[tuple[Any, ...] | Any]:
+    @staticmethod
+    async def get_submenus_and_dishes_counts(menu_id: str) -> Row[tuple[int, int]]:
         async with get_session() as db:
             result = (await db.execute(
                 select(func.count(func.distinct(Submenu.id)),
@@ -73,7 +79,8 @@ class MenuRepo:
                 .where(Submenu.menu_id == menu_id))).one()
             return result
 
-    async def get_all_menus_submenus_and_dishes(self) -> list:
+    @staticmethod
+    async def get_all_menus_submenus_and_dishes() -> list:
         async with get_session() as db:
             return (await db.scalars(
                 select(Menu, Submenu, Dish)
@@ -89,7 +96,7 @@ class MenuRepo:
         async with get_session() as db:
             return (await db.scalars(
                 select(Menu).options(joinedload(Menu.submenus).options(joinedload(Submenu.dishes)))
-                .order_by(Menu.id)  # , Submenu.id)
+                .order_by(Menu.id)
             )).unique().all()
 
     @staticmethod
